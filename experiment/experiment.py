@@ -1,0 +1,50 @@
+import numpy as np
+import sys
+
+sys.path.append("../Agents")
+from UAVTrack_Scene import UAVTrack_Scene
+
+DEFAULT_UAV_VELOCITY_RANGE = [0., 80.]
+DEFAULT_UAV_ANGLE_VELOCITY_RANGE = [-200., 200.]
+DEFAULT_UAV_INIT_X_RANGE = [10., 30.]
+DEFAULT_UAV_INIT_Y_RANGE = [10., 30.]
+DEFAULT_UAV_D_MIN = 10.
+DEFAULT_UAV_D_MAX = 40.
+DEFAULT_UAV_DELTA_D = 5.
+DEFAULT_UAV_HEIGHT = DEFAULT_UAV_D_MIN
+DEFAULT_NUM_OF_UAV = 2
+DEFAULT_TARGET_INIT_X_RANGE = [10., 30.]
+DEFAULT_TARGET_INIT_Y_RANGE = [10., 30.]
+DEFAULT_TARGET_INIT_ANGLE_RANGE = [-200., 200.]
+DEFAULT_TARGET_V_RANGE = [15., 80.]
+DEFAULT_TARGET_ANGLE_RANGE = [-180., 180.]
+DEFAULT_TIME_SLOTS = 10.
+DEFAULT_DOMAIN_TIME_LENGTH = .15
+DEFAULT_TIME_SLOTS_LENGTH = 0.05
+DEFAULT_TIME_STEP_Q = (DEFAULT_DOMAIN_TIME_LENGTH) / (DEFAULT_TIME_SLOTS_LENGTH)
+DEFAULT_EC_POPULATION = 50
+DEFAULT_EC_EPOCH = 200
+DEFAULT_EC_LAMBDA = [0.75, 0.05, 0.1, 0.1]
+DEFAULT_EC_F = [0.1, 0.3]
+DEFAULT_EC_CR = [0.1, 0.6]
+DEFAULT_NASH_EPSILON = .01
+
+
+def experiment1():
+    UAVTrack_Scene_object = UAVTrack_Scene(DEFAULT_NUM_OF_UAV, DEFAULT_EC_POPULATION, DEFAULT_TIME_SLOTS,
+                                           DEFAULT_TIME_SLOTS_LENGTH, DEFAULT_DOMAIN_TIME_LENGTH, DEFAULT_UAV_HEIGHT,
+                                           DEFAULT_UAV_INIT_X_RANGE, DEFAULT_UAV_INIT_Y_RANGE,
+                                           DEFAULT_TARGET_INIT_X_RANGE, DEFAULT_TARGET_INIT_Y_RANGE,
+                                           DEFAULT_TARGET_V_RANGE, DEFAULT_TARGET_ANGLE_RANGE,
+                                           [DEFAULT_UAV_VELOCITY_RANGE[1], DEFAULT_UAV_ANGLE_VELOCITY_RANGE[1]],
+                                           [DEFAULT_UAV_VELOCITY_RANGE[0], DEFAULT_UAV_ANGLE_VELOCITY_RANGE[0]],
+                                           DEFAULT_EC_LAMBDA, DEFAULT_EC_F[0], DEFAULT_EC_F[1], DEFAULT_EC_CR[0],
+                                           DEFAULT_EC_CR[1], DEFAULT_UAV_D_MIN, DEFAULT_UAV_D_MAX,
+                                           DEFAULT_UAV_DELTA_D, DEFAULT_EC_EPOCH, DEFAULT_NASH_EPSILON)
+    UAVTrack_Scene_object.run()
+
+def main():
+    experiment1()
+
+if __name__ == "__main__":
+    main()
