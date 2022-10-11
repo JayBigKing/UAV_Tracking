@@ -54,13 +54,21 @@ def test6():
     print(np2)
     print(np.sum(np.square(np2 - np3)))
 
+def test7():
+    n0 = np.array([i + 10 for i in range(20)])
+    l0 = [0, 4, 5]
+    print(n0.take(l0))
+    print(np.average(n0))
+    print(np.average(n0.take(l0)))
+
 def main():
     # test1()
-    test2()
+    # test2()
     # test3()
     # test4()
     # test5()
     # test6()
+    test7()
 
 if __name__ == "__main__":
     main()

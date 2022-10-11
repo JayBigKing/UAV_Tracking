@@ -10,6 +10,7 @@ class EC_WithStat_Base(EC_Base):
                  statRegisters=None, otherTerminalHandler=None, useCuda=False):
         super().__init__(n, dimNum, maxConstraint, minConstraint, evalVars, otimizeWay, needEpochTimes, ECArgs,
                          otherTerminalHandler, useCuda)
+
         self.__DEFAULT_EC_STAT_FUNC_MAP = {
             "bestOverGen": self.EC_WithStat_BestOverGenFunc,
             "HammingDis": self.EC_WithStat_HammingDisFunc,
