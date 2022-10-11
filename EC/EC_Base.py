@@ -1,3 +1,13 @@
+#!/usr/local/bin/python3
+# -*- coding: utf-8 -*-
+
+"""
+@Project : uav tracking
+@File    : EC_Base.py
+@Author  : jay.zhu
+@Time    : 2022/10/8 15:00
+"""
+
 import collections
 import bisect
 import numpy as np
@@ -110,11 +120,8 @@ class EC_Base:
                 self.bestChromosomeIndex = index
                 self.bestChromosome = np.array(self.chromosomes[:, index])
             else:
-                # self.chromosomesFittingValue[index][self.CHROMOSOME_DIM_INDEX], self.chromosomesAimFuncValue[index][self.CHROMOSOME_DIM_INDEX] = \
-                # self.chromosomesFittingValue[index][valDim], self.chromosomesAimFuncValue[index][valDim]
                 self.bestChromosomeIndex = index + self.Np
                 self.bestChromosome = np.array(self.middleChromosomes[:, index])
-                # self.chromosomes[:, index] = np.array(self.middleChromosomes[:, index])
 
     def chromosomeInit(self):
         for i in range(0, self.Np):
@@ -124,9 +131,6 @@ class EC_Base:
             self.chromosomesFittingValue[i][self.CHROMOSOME_DIM_INDEX], \
             self.chromosomesAimFuncValue[i][self.CHROMOSOME_DIM_INDEX] = \
                 self.fittingOne(self.chromosomes[:, i], self.evalVars)
-            # if self.cmpFitting(self.chromosomesFittingValue[i][self.CHROMOSOME_DIM_INDEX],
-            #                    self.chromosomesFittingValue[self.bestChromosomeIndex][self.CHROMOSOME_DIM_INDEX]) > 0:
-            #     self.bestChromosomeIndex = i
             self.cmpToBestChromosomeAndStore(i, self.CHROMOSOME_DIM_INDEX)
 
     def callAimFunc(self, chromosome, evalVars):
@@ -138,14 +142,6 @@ class EC_Base:
                 self.MIDDLE_CHROMOSOME_DIM_INDEX] = self.fittingOne(
                 self.middleChromosomes[:, i], self.evalVars)
             self.cmpToBestChromosomeAndStore(i, self.MIDDLE_CHROMOSOME_DIM_INDEX)
-    # def fitting(self, chromosome, evalVars):
-    #     aimFuncVal = self.callAimFunc(chromosome, evalVars)
-    #     fittingValue = aimFuncVal
-    #     if self.optimizeWay == EC_OtimizeWay.MIN:
-    #         fittingMinDenominator = self.ECArgs["fittingMinDenominator"] if self.ECArgs.get(
-    #             "fittingMinDenominator") else self.DEFAULT_EC_BASE_ARGS["fittingMinDenominator"]
-    #         fittingValue = 1 / (fittingValue + 1 + fittingMinDenominator)
-    #     return fittingValue, aimFuncVal
 
     def fittingOne(self, chromosome, evalVars):
         aimFuncVal = self.callAimFunc(chromosome, evalVars)
@@ -249,19 +245,6 @@ class EC_Base:
         elif self.EC_Base_codingType.value == EC_CodingType.OTHER_CODING.value:
             pass
 
-        # for i in range(self.Np):
-        #     self.chromosomesFittingValue[i][self.MIDDLE_CHROMOSOME_DIM_INDEX], self.chromosomesAimFuncValue[i][
-        #         self.MIDDLE_CHROMOSOME_DIM_INDEX] = self.fitting(
-        #         self.middleChromosomes[:, i], self.evalVars)
-        #     # if self.cmpFitting(self.chromosomesFittingValue[i][self.MIDDLE_CHROMOSOME_DIM_INDEX],
-        #     #                    self.chromosomesFittingValue[self.bestChromosomeIndex][self.CHROMOSOME_DIM_INDEX]) > 0:
-        #     #     self.bestChromosomeIndex = i
-        #     #     self.chromosomesFittingValue[i][self.CHROMOSOME_DIM_INDEX], self.chromosomesAimFuncValue[i][
-        #     #         self.CHROMOSOME_DIM_INDEX] = \
-        #     #         self.chromosomesFittingValue[i][self.MIDDLE_CHROMOSOME_DIM_INDEX], self.chromosomesAimFuncValue[i][
-        #     #             self.MIDDLE_CHROMOSOME_DIM_INDEX]
-        #     #     self.chromosomes[:, i] = np.array(self.middleChromosomes[:, i])
-        #     self.cmpToBestChromosomeAndStore(i, self.MIDDLE_CHROMOSOME_DIM_INDEX)
 
     def select(self):
         selectIndexSet = self.EC_Base_selectInner()
@@ -276,7 +259,6 @@ class EC_Base:
             else:
                 nextChromosome[:, i] = self.chromosomes[:, selectIndex]
 
-        # nextChromosome[:, self.bestChromosomeIndex] = self.chromosomes[:, self.bestChromosomeIndex]
         self.chromosomes = np.array(nextChromosome)
 
     def EC_Base_selectInner(self):

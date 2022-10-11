@@ -1,3 +1,13 @@
+#!/usr/local/bin/python3
+# -*- coding: utf-8 -*-
+
+"""
+@Project : uav tracking
+@File    : EC_ChangeDetect.py
+@Author  : jay.zhu
+@Time    : 2022/10/10 21:58
+"""
+
 from enum import Enum
 from collections import defaultdict
 import random

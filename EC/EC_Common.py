@@ -1,4 +1,13 @@
-from operator import methodcaller
+#!/usr/local/bin/python3
+# -*- coding: utf-8 -*-
+
+"""
+@Project : uav tracking
+@File    : EC_Common.py
+@Author  : jay.zhu
+@Time    : 2022/10/11 15:00
+"""
+
 from collections import defaultdict
 class ArgsDictValueGetter:
     def __init__(self, userArgsDict : dict, defaultArgsDict : dict) -> None:
@@ -17,6 +26,3 @@ class ArgsDictValueGetter:
         if defaultArgsDict is not None:
             self.defaultArgsDict.update(defaultArgsDict)
 
-
-# def getValueFromArgsDictCustomGenerator(userArgsDict : dict, defaultDict : dict) -> object:
-#     return methodcaller('')

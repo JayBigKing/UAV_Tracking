@@ -1,3 +1,13 @@
+#!/usr/local/bin/python3
+# -*- coding: utf-8 -*-
+
+"""
+@Project : uav tracking
+@File    : EC_WithStat_Base.py
+@Author  : jay.zhu
+@Time    : 2022/10/9 15:00
+"""
+
 from inspect import isfunction
 import numpy as np
 from EC.EC_Base import EC_Base
