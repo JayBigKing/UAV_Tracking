@@ -14,7 +14,7 @@ from EC.EC_Base import EC_Base
 
 
 class EC_WithStat_Base(EC_Base):
-    __DEFAULT_EC_STAT_FUNC_STR = ["bestOverGen", "HammingDis", "InertiaDis", "ARR"]
+    __DEFAULT_EC_STAT_FUNC_STR = ["bestOverGen", "HammingDis", "InertiaDis", "ARR", "printOutEveryGen"]
 
     def __init__(self, n, dimNum, maxConstraint, minConstraint, evalVars, otimizeWay, needEpochTimes, ECArgs,
                  statRegisters=None, otherTerminalHandler=None, useCuda=False):
@@ -25,6 +25,7 @@ class EC_WithStat_Base(EC_Base):
             "bestOverGen": self.EC_WithStat_BestOverGenFunc,
             "HammingDis": self.EC_WithStat_HammingDisFunc,
             "InertiaDis": self.EC_WithStat_InertiaDisFunc,
+            "printOutEveryGen" : self.EC_WithStat_PrintOutEveryGenFunc,
         }
         self.statFuncReg = []
         for item in statRegisters:
@@ -45,9 +46,9 @@ class EC_WithStat_Base(EC_Base):
 
     def EC_WithStat_callStatFunc(self):
         for item in self.statFuncReg:
-            item(chromosomes=self.chromosomes,
-                 chromosomesAimFuncValue=self.chromosomesAimFuncValue[-1][self.CHROMOSOME_DIM_INDEX],
-                 chromosomesFittingValue=self.chromosomesFittingValue[-1][self.CHROMOSOME_DIM_INDEX])
+            item(chromosomes=self.chromosomes[self.BEST_IN_ALL_GEN_DIM_INDEX],
+                 chromosomesAimFuncValue=self.bestChromosomesAimFuncValue[self.BEST_IN_ALL_GEN_DIM_INDEX],
+                 chromosomesFittingValue=self.bestChromosomesFittingValue[self.BEST_IN_ALL_GEN_DIM_INDEX],)
 
     def EC_WithStat_BestOverGenFunc(self, **kwargs):
         bestAimFuncVal = kwargs["chromosomesAimFuncValue"]
@@ -64,6 +65,11 @@ class EC_WithStat_Base(EC_Base):
 
     def EC_WithStat_ARRFunc(self, **kwargs):
         pass
+
+    def EC_WithStat_PrintOutEveryGenFunc(self, **kwargs):
+        bestAimFuncVal = kwargs["chromosomesAimFuncValue"]
+        bestFittingFuncVal = kwargs["chromosomesFittingValue"]
+        print('[BestAimFuncVal, BestFittingVal, bestChromosome]: [%f, %f, %r]' % (bestAimFuncVal, bestFittingFuncVal, self.ECArgsDictValueController["mutationProbability"]))
 
     # reload base class function
     def optimizeInner(self):

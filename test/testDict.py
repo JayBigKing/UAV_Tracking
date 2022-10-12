@@ -8,6 +8,9 @@ def test1():
     dea.update(DEFAULT_EC_ARGS2)
     print(dea)
     print(dea["hh"] == [])
+    DEFAULT_EC_ARGS2["floatCrossoverAlpha"] = 0.09
+    print(dea["floatCrossoverAlpha"])
+
 
 def test2():
     selectIndexSet = set()
@@ -18,7 +21,7 @@ def test2():
         print("{}:{}".format(i, index))
 
 def main():
-    test2()
+    test1()
 
 if __name__ == "__main__":
     main()
