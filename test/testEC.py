@@ -47,7 +47,7 @@ def test3():
     eb = EC_DynamicOpt_HyperMutation(10, 1, [100.], [-100.], evalFunc2, EC_OtimizeWay.MIN ,
                                      needEpochTimes=100,
                                      ECArgs={"borders":[1], "performanceThreshold": 2., "refractoryPeriodLength":1},
-                                     statRegisters=["bestOverGen", "printOutEveryGen"])
+                                     statRegisters=["bestOverGen"])
     chromosome, bestVal = eb.optimize()
     avgOfBestChromosomesVal, bestChromosomesOverGen = eb.EC_WithStat_GetBestOverGen()
     print(f'best chromosome : {chromosome !r}\r\nbestVal : {bestVal !r}'.format(chromosome=chromosome, bestVal=bestVal))

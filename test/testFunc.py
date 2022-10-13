@@ -17,8 +17,16 @@ def test3():
     from operator import methodcaller
     test3Tester = methodcaller("test3Help", 2., 30)
     test3Tester(0.1)
+
+def test4Help(x):
+    return x**2, x**x
+
+def test4():
+    retVal = test4Help(1)
+    print(retVal[0])
+
 def main():
-    test3()
+    test4()
 
 if __name__ == "__main__":
     main()

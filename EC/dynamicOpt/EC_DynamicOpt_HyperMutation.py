@@ -22,6 +22,7 @@ class EC_DynamicOpt_HyperMutation(EC_DynamicOpt_Base):
     def __init__(self, n, dimNum, maxConstraint, minConstraint, evalVars, otimizeWay, needEpochTimes, ECArgs,
                  statRegisters=None, changeDetectorRegisters=None, otherTerminalHandler=None,
                  useCuda=False):
+        statRegisters.append(self.EC_DynamicOpt_HyperMutation_PrintOutEveryGenFunc)
 
         if changeDetectorRegisters is None:
             if ECArgs.get("performanceThreshold"):
@@ -47,3 +48,8 @@ class EC_DynamicOpt_HyperMutation(EC_DynamicOpt_Base):
         if self.refractoryPeriodTick == refractoryPeriodLength:
             self.ECArgsDictValueController["mutationProbability"] = \
                 self.ECDynOptHyperMutation_ECArgsDictValueController["mutationProbabilityWhenNormal"]
+
+    def EC_DynamicOpt_HyperMutation_PrintOutEveryGenFunc(self, **kwargs):
+        bestAimFuncVal = kwargs["chromosomesAimFuncValue"]
+        bestFittingFuncVal = kwargs["chromosomesFittingValue"]
+        print('[BestAimFuncVal, BestFittingVal, bestChromosome]: [%f, %f, %r]' % (bestAimFuncVal, bestFittingFuncVal, self.ECArgsDictValueController["mutationProbability"]))

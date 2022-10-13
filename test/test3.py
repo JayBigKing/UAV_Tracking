@@ -1,4 +1,4 @@
-from Agents.Agent_Common import calcMovingForUAV, calcDistance, clacDirection
+from MAS.Agents.Agent_Common import calcMovingForUAV, calcDistance, clacDirection
 from Jay_Tool.visualizeTool.CoorDiagram import  CoorDiagram
 import numpy as np
 

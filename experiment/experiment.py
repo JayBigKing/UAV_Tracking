@@ -1,7 +1,7 @@
 import numpy as np
 import sys
 
-sys.path.append("../Agents")
+sys.path.append("../MAS/Agents")
 from UAVTrack_Scene import UAVTrack_Scene
 
 DEFAULT_UAV_VELOCITY_RANGE = [0., 80.]

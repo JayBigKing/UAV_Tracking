@@ -11,6 +11,7 @@
 from inspect import isfunction
 import numpy as np
 from EC.EC_Base import EC_Base
+from dataStatistics.statFuncListGenerator import statFuncListGenerator
 
 
 class EC_WithStat_Base(EC_Base):
@@ -27,12 +28,13 @@ class EC_WithStat_Base(EC_Base):
             "InertiaDis": self.EC_WithStat_InertiaDisFunc,
             "printOutEveryGen" : self.EC_WithStat_PrintOutEveryGenFunc,
         }
-        self.statFuncReg = []
-        for item in statRegisters:
-            if isinstance(item, str):
-                self.statFuncReg.append(self.__DEFAULT_EC_STAT_FUNC_MAP[item])
-            elif isfunction(item):
-                self.statFuncReg.append(item)
+        # self.statFuncReg = []
+        # for item in statRegisters:
+        #     if isinstance(item, str):
+        #         self.statFuncReg.append(self.__DEFAULT_EC_STAT_FUNC_MAP[item])
+        #     elif isfunction(item):
+        #         self.statFuncReg.append(item)
+        self.statFuncReg = statFuncListGenerator(statRegisters, self.__DEFAULT_EC_STAT_FUNC_MAP)
 
         self.statBaseInit()
 

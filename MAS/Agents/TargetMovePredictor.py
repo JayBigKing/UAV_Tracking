@@ -1,7 +1,7 @@
 import numpy as np
 from copy import deepcopy
 import sys
-sys.path.append("../algorithmTool/filterTool")
+sys.path.append("../../algorithmTool/filterTool")
 sys.path.append("../visualize")
 from CoorDiagram import CoorDiagram
 from KalmanFilter import KalmanFilter2
