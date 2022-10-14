@@ -34,8 +34,9 @@ class Scene_Base:
 
     def run(self):
         self.runningPreProcess()
-        if self.shouldContinue():
+        while self.shouldContinue():
             self.runningInner()
+            print('running epoch : %d / %d' % (self.nowRunningTime, self.needRunningTimes))
         self.runningFinal()
 
 

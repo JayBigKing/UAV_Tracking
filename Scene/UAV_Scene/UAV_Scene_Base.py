@@ -18,17 +18,19 @@ class UAV_Scene_Base(Scene_Base):
         self.targetNum = targetNum
         self.deltaTime = deltaTime
         if isinstance(agentsArgs, list) is False:
-            self.agents = [agentsCls(initPositionState=agentsArgs["initPositionState"],
-                                     linearVelocityRange=agentsArgs["linearVelocityRange"],
-                                     angularVelocity=agentsArgs["angularVelocity"],
+            self.agents = [agentsCls(initPositionState=agentsArgs["initArgs"]["initPositionState"],
+                                     linearVelocityRange=agentsArgs["initArgs"]["linearVelocityRange"],
+                                     angularVelocity=agentsArgs["initArgs"]["angularVelocity"],
+                                     agentArgs=agentsArgs["computationArgs"],
                                      optimizerCls=optimizerCls,
                                      optimizerInitArgs=optimizerArgs["optimizerInitArgs"],
                                      optimizerComputationArgs=optimizerArgs["optimizerComputationArgs"],
                                      deltaTime=deltaTime) for i in range(agentsNum)]
         else:
-            self.agents = [agentsCls(initPositionState=agentsArgs[i]["initPositionState"],
-                                     linearVelocityRange=agentsArgs[i]["linearVelocityRange"],
-                                     angularVelocity=agentsArgs[i]["angularVelocity"],
+            self.agents = [agentsCls(initPositionState=agentsArgs[i]["initArgs"]["initPositionState"],
+                                     linearVelocityRange=agentsArgs[i]["initArgs"]["linearVelocityRange"],
+                                     angularVelocity=agentsArgs[i]["initArgs"]["angularVelocity"],
+                                     agentArgs=agentsArgs[i]["computationArgs"],
                                      optimizerCls=optimizerCls,
                                      optimizerInitArgs=optimizerArgs["optimizerInitArgs"],
                                      optimizerComputationArgs=optimizerArgs["optimizerComputationArgs"],
@@ -73,11 +75,11 @@ class UAV_Scene_Base(Scene_Base):
         else:
             self.multiAgentSystem.recvFromEnv(targetPosition=[item.positionState for item in self.targets])
 
-        self.multiAgentSystem.optimization()
+        # self.multiAgentSystem.optimization()
         self.multiAgentSystem.update()
 
         if self.targetNum == 1:
-            self.target.moving()
+            self.target.update()
         else:
             for item in self.targets:
-                item.moving()
+                item.update()

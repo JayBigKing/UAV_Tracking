@@ -24,8 +24,9 @@ class MAS_Base:
     def shouldContinueOptimization(self, terminalHandler):
         self._nowOptimizationTimeStep += 1
         if terminalHandler is not None:
-            if terminalHandler(agents = self.agents):
-                return True
+            if terminalHandler(agents = self.agents) is False:
+                return False
+
 
         if self._nowOptimizationTimeStep <= self.MAS_BASE_Args["optimizationNeedTimes"]:
             return True

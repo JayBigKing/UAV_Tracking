@@ -53,7 +53,7 @@ class EC_Base:
 
     # use two dim to identify the best chromosome over all Gen and the best chromosome in now Gen
     BEST_IN_ALL_GEN_DIM_INDEX = 0
-    BEST_IN_NOW_GEN_DIM_INDEX = 0
+    BEST_IN_NOW_GEN_DIM_INDEX = 1
 
     def __init__(self, n, dimNum, maxConstraint, minConstraint, evalVars, otimizeWay, needEpochTimes,
                  ECArgs, otherTerminalHandler=None, useCuda=False):
@@ -94,6 +94,7 @@ class EC_Base:
         self.codingInit(self.Np, self.dimNum, self.ECArgs["EC_CodingType"])
         self.selectTypeInit(self.ECArgs["EC_ChoosingType"])
         self.chromosomeInit()
+        self.firstRun = True
 
     def codingInit(self, n, dimNum, codingType: EC_CodingType = EC_CodingType.FLOAT_CODING):
         if codingType != []:
@@ -125,12 +126,12 @@ class EC_Base:
             for j in range(0, self.dimNum):
                 self.chromosomes[j, i] = self.minConstraint[j] + np.random.random() * (
                         self.maxConstraint[j] - self.minConstraint[j])
-            self.chromosomesFittingValue[i][self.CHROMOSOME_DIM_INDEX], \
-            self.chromosomesAimFuncValue[i][self.CHROMOSOME_DIM_INDEX] = \
-                self.fittingOne(self.chromosomes[:, i], self.evalVars)
-            self.cmpToBestChromosomeAndStore(i, self.CHROMOSOME_DIM_INDEX)
+            # self.chromosomesFittingValue[i][self.CHROMOSOME_DIM_INDEX], \
+            # self.chromosomesAimFuncValue[i][self.CHROMOSOME_DIM_INDEX] = \
+            #     self.fittingOne(self.chromosomes[:, i], self.evalVars)
+            # self.cmpToBestChromosomeAndStore(i, self.CHROMOSOME_DIM_INDEX)
 
-        self.fitting(isOffspring=False)
+        # self.fitting(isOffspring=False)
 
 
     '''
@@ -162,10 +163,9 @@ class EC_Base:
         self._nowEpochTime += 1
         if otherTerminalHandler is not None:
             if otherTerminalHandler(
-                    bestChromosomesFittingValue=self.bestChromosomesFittingValue[self.BEST_IN_ALL_GEN_DIM_INDEX]) is True:
-                return True
-            else:
+                    bestChromosomesFittingValue=self.bestChromosomesFittingValue[self.BEST_IN_ALL_GEN_DIM_INDEX]) is False:
                 return False
+
         if self._nowEpochTime <= self.needEpochTimes:
             return True
         else:
@@ -181,11 +181,16 @@ class EC_Base:
     '''
 
     def optimize(self):
+        if self.firstRun == True:
+            self.chromosomeInit()
+            self.bestChromosome = np.zeros((self.dimNum, 2))
+            self.fitting(isOffspring=False)
+            # self.firstRun = False
         self.initShouldContinueVar(self.otherTerminalHandler)
         while self.shouldContinue(self.otherTerminalHandler):
             self.optimizeInner()
 
-        return np.array(self.bestChromosome[:, self.BEST_IN_ALL_GEN_DIM_INDEX]), \
+        return np.array(self.bestChromosome[self.BEST_IN_ALL_GEN_DIM_INDEX]), \
                self.bestChromosomesAimFuncValue[self.BEST_IN_ALL_GEN_DIM_INDEX]
 
     def optimizeInner(self):
@@ -307,13 +312,16 @@ class EC_Base:
     def fitting(self, isOffspring = True):
         if isOffspring is True:
             valDim = self.MIDDLE_CHROMOSOME_DIM_INDEX
+            calcChromosomes = self.middleChromosomes
         else:
             valDim = self.CHROMOSOME_DIM_INDEX
+            calcChromosomes = self.chromosomes
+
 
         for i in range(self.Np):
             self.chromosomesFittingValue[i][valDim], self.chromosomesAimFuncValue[i][
                 valDim] = self.fittingOne(
-                self.middleChromosomes[:, i], self.evalVars)
+                calcChromosomes[:, i], self.evalVars)
             self.cmpToBestChromosomeAndStore(i, valDim)
 
     def fittingOne(self, chromosome, evalVars):

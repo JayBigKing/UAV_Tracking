@@ -21,7 +21,7 @@ class Agent_Base(ABC):
         pass
 
     def optimization(self):
-        self.optimizationResult = self.optimizer.optimization()
+        self.optimizationResult = self.optimizer.optimize()
 
     @abstractmethod
     def update(self):

@@ -11,11 +11,12 @@ from inspect import isfunction
 
 def statFuncListGenerator(statRegisters, defaultStatFuncDict):
     statFuncReg = []
-    for item in statRegisters:
-        if isinstance(item, str):
-            statFuncReg.append(defaultStatFuncDict[item])
-        else:
-            statFuncReg.append(item)
+    if statRegisters is not None:
+        for item in statRegisters:
+            if isinstance(item, str):
+                statFuncReg.append(defaultStatFuncDict[item])
+            else:
+                statFuncReg.append(item)
 
     return statFuncReg
 

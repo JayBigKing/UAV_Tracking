@@ -46,7 +46,7 @@ class EC_DynamicOpt_Base(EC_WithStat_Base):
     def fitting(self, isOffspring=True):
         # 因为是动态的，所以最优的fitting是会变的，所以先fitting最优的那个
         self.bestChromosomesFittingValue[self.BEST_IN_ALL_GEN_DIM_INDEX], self.bestChromosomesAimFuncValue[
-            self.BEST_IN_ALL_GEN_DIM_INDEX] = self.fittingOne(self.bestChromosome[:, self.BEST_IN_ALL_GEN_DIM_INDEX],
+            self.BEST_IN_ALL_GEN_DIM_INDEX] = self.fittingOne(self.bestChromosome[self.BEST_IN_ALL_GEN_DIM_INDEX],
                                                               self.evalVars)
 
         super().fitting(isOffspring)

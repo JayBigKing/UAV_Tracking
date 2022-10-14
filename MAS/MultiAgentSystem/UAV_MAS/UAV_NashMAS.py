@@ -19,7 +19,8 @@ class UAV_NashMAS(UAV_MAS_Base):
     }
 
     def __init__(self, agents, masArgs, ):
-        super().__init__(agents, masArgs, self.terminalHandler)
+        # super().__init__(agents, masArgs, self.terminalHandler)
+        super().__init__(agents, masArgs, None)
         self.lastAgentOptimizationRes = []
         self.NashMas_Args = ArgsDictValueController(masArgs, self.__NASH_MAS_DEFAULT_ARGS, onlyUseDefaultKey=True)
 
@@ -28,13 +29,14 @@ class UAV_NashMAS(UAV_MAS_Base):
             self.lastAgentOptimizationRes = []
         else:
             if self.lastAgentOptimizationRes == []:
-                self.lastAgentOptimizationRes = [np.array(item.optimizationResult) for item in agents]
+                if agents[0].optimizationResult is not None:
+                    self.lastAgentOptimizationRes = [item.predictVelocity for item in agents]
                 return True
             else:
                 continueFlag = False
                 for index, item in enumerate(agents):
-                    if len(item) <= 5:
-                        for index2, itemValue in enumerate(item):
+                    if len(item.optimizationResult) <= 0:
+                        for index2, itemValue in enumerate(item.predictVelocity):
                             if abs(self.lastAgentOptimizationRes[index][index2] - itemValue) > self.NashMas_Args[
                                 "oneDiffNashBalanceValue"]:
                                 continueFlag = True
@@ -42,7 +44,7 @@ class UAV_NashMAS(UAV_MAS_Base):
                         if continueFlag == True:
                             break
                     else:
-                        AllCountDiff = np.sum(np.abs(np.subtract(self.lastAgentOptimizationRes[index], item)))
+                        AllCountDiff = np.sum(np.abs(self.lastAgentOptimizationRes[index] - item.predictVelocity))
                         if AllCountDiff < self.NashMas_Args["allCountDiffNashBalanceValue"]:
                             return False
 

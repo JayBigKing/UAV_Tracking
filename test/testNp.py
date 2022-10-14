@@ -74,6 +74,13 @@ def test9():
     for item in n1:
         print(item)
 
+def test10():
+    n0 = np.array([i + 10 for i in range(20)])
+    n1 = np.array(n0)
+    n0[2]= 0.
+    for item in n1:
+        print(item)
+
 def main():
     # test1()
     # test2()
@@ -83,7 +90,8 @@ def main():
     # test6()
     # test7()
     # test8()
-    test9()
+    # test9()
+    test10()
 
 if __name__ == "__main__":
     main()
