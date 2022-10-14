@@ -60,6 +60,19 @@ def test7():
     print(n0.take(l0))
     print(np.average(n0))
     print(np.average(n0.take(l0)))
+    print(len(n0))
+
+def test8():
+    n0 = np.array([i + 10 for i in range(20)])
+    for item in n0:
+        print(item)
+
+def test9():
+    n0 = np.array([i + 10 for i in range(20)])
+    n1 = n0
+    n0[2]= 0.
+    for item in n1:
+        print(item)
 
 def main():
     # test1()
@@ -68,7 +81,9 @@ def main():
     # test4()
     # test5()
     # test6()
-    test7()
+    # test7()
+    # test8()
+    test9()
 
 if __name__ == "__main__":
     main()

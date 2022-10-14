@@ -8,6 +8,7 @@
 @Time    : 2022/10/13 13:05
 """
 import numpy as np
+from algorithmTool.mathFunction.mathFunction import Jay_sigmoid
 from EC.EC_Common import ArgsDictValueController
 from MAS.Agents.UAV_Agent.Agent_UAV_Base import Agent_UAV_Base
 from MAS.Agents.UAV_Agent.UAV_Common import calcMovingForUAV, calcDistance
@@ -42,12 +43,16 @@ class UAV_Agent(Agent_UAV_Base):
         self.height = height
 
     def sendMeg(self):
-        return self.positionState
+        return self.positionState, self.velocity, self.optimizationResult
 
     def recvMeg(self, **kwargs):
         self.agentCrowd = np.array(kwargs["agentCrowd"])
         self.selfIndex = kwargs["selfIndex"]
         self.targetPosition = np.array(kwargs["targetPosition"])
+
+        # self.agentCrowdPositionState = self.agentCrowd["positionState"]
+        # self.agentCrowdVelocity = self.agentCrowd["positionState"]["velocity"]
+        # self.agentCrowdOptimizationResult = self.agentCrowd["positionState"]["optimizationResult"]
 
     def optimizerTerminalHandler(self, bestChromosomesFittingValue):
         if self.sameBestFittingCount < self.agentArgs["sameBestFittingCountThreshold"]:
@@ -75,7 +80,7 @@ class UAV_Agent(Agent_UAV_Base):
 
     def evalVars_Collision(self, chromosome):
         JCollisionVal = 0.
-        for index, item in enumerate(self.agentCrowd):
+        for index, item in enumerate(self.agentCrowd["positionState"]):
             if index != self.selfIndex:
                 distanceFromItem = calcDistance(self.positionState, item)
                 minDistanceThreshold = self.agentArgs["minDistanceThreshold"]
@@ -86,11 +91,12 @@ class UAV_Agent(Agent_UAV_Base):
 
     def evalVars_Communication(self, chromosome):
         JCommunicationVal = 0.
-        for index, item in enumerate(self.agentCrowd):
+        for index, item in enumerate(self.agentCrowd["positionState"]):
             if index != self.selfIndex:
                 distanceFromItem = calcDistance(self.positionState, item)
                 maxDistanceThreshold = self.agentArgs["maxDistanceThreshold"]
                 if distanceFromItem > maxDistanceThreshold:
-                    JCommunicationVal += self.agentArgs["bigDistanceBlameFactor"] * (distanceFromItem - maxDistanceThreshold) / maxDistanceThreshold
+                    # JCommunicationVal += self.agentArgs["bigDistanceBlameFactor"] * (distanceFromItem - maxDistanceThreshold) / maxDistanceThreshold
+                    JCommunicationVal += self.agentArgs["bigDistanceBlameFactor"] * Jay_sigmoid(distanceFromItem - maxDistanceThreshold) + 2.
 
         return JCommunicationVal

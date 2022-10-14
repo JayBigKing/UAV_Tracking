@@ -44,6 +44,7 @@ class MAS_Base:
 
     def optimization(self):
         self.initShouldContinueOptimizationVar(self.terminalHandler)
+        self.optimizationPreProcess()
         while self.shouldContinueOptimization(self.terminalHandler):
             self.optimizationInner()
 
@@ -52,7 +53,13 @@ class MAS_Base:
         for agent in self.agents:
             agent.optimization()
 
+    def optimizationPreProcess(self):
+        pass
+
     def communication(self):
+        pass
+
+    def recvFromEnv(self, **kwargs):
         pass
 
 

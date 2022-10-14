@@ -20,8 +20,13 @@ def test2():
     for i,index in enumerate(selectIndexSet):
         print("{}:{}".format(i, index))
 
+def test3():
+    d0 = {"h":1, "u":2}
+    print(len(d0))
+    print(isinstance(d0,list))
+
 def main():
-    test1()
+    test3()
 
 if __name__ == "__main__":
     main()
