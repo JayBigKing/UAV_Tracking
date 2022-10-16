@@ -85,7 +85,7 @@ def experiment1():
         "deltaTime": DELTA_TIME,
     }
     MAS_ARGS = {
-        "optimizationNeedTimes": 1,
+        "optimizationNeedTimes": 10,
         "allCountDiffNashBalanceValue": 5e-1,
         "oneDiffNashBalanceValue": 1e-4
     }

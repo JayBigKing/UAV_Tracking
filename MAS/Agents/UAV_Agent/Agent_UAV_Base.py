@@ -30,13 +30,13 @@ class Agent_UAV_Base(Agent_WithStat_Base):
 
     def updateInner(self):
         self.moving()
-        for item in self.statFuncReg:
-            item(positionState=True)
+        # for item in self.statFuncReg:
+        #     item(positionState=True)
 
     def moving(self):
         self.velocity[0], self.velocity[1] = self.optimizationResult[0][0], self.optimizationResult[0][1]
         self.positionState = calcMovingForUAV(self.positionState, self.velocity, self.deltaTime)
 
     def coordinateRecord(self, **kwargs):
-        if kwargs.get("positionState"):
-            self.coordinateVector.append([self.positionState[0], self.positionState[1]])
+        # if kwargs.get("positionState"):
+        self.coordinateVector.append([self.positionState[0], self.positionState[1]])

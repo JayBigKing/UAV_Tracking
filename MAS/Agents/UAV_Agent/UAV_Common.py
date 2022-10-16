@@ -21,10 +21,17 @@ def calcMovingForUAV(x, u, time):
     # res[1] = x[1] + u[0] * np.sin(np.deg2rad(x[2])) * time
     # res[2] = x[2] + u[1] * time
 
+    # res = np.zeros(3)
+    # res[2] = x[2] + u[1] * time
+    # res[0] = x[0] + u[0] * np.cos(np.deg2rad(res[2])) * time
+    # res[1] = x[1] + u[0] * np.sin(np.deg2rad(res[2])) * time
+
+    # 保证角度可以动完，移动是通过积分完成
     res = np.zeros(3)
-    res[2] = x[2] + u[1] * time
-    res[0] = x[0] + u[0] * np.cos(np.deg2rad(res[2])) * time
-    res[1] = x[1] + u[0] * np.sin(np.deg2rad(res[2])) * time
+    newRes2 = x[2] + u[1] * time
+    res[0] = x[0] + u[0] * (np.sin(np.deg2rad(newRes2)) - np.sin(np.deg2rad(res[2])))
+    res[1] = x[1] + u[0] * (np.cos(np.deg2rad(res[2])) - np.cos(np.deg2rad(newRes2)))
+    res[2] = newRes2
 
     return res
 
