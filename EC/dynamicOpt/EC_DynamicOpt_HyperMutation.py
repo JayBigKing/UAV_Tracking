@@ -22,10 +22,10 @@ class EC_DynamicOpt_HyperMutation(EC_DynamicOpt_Base):
     def __init__(self, n, dimNum, maxConstraint, minConstraint, evalVars, otimizeWay, needEpochTimes, ECArgs,
                  statRegisters=None, changeDetectorRegisters=None, otherTerminalHandler=None,
                  useCuda=False):
-        if statRegisters is None:
-            statRegisters = [self.EC_DynamicOpt_HyperMutation_PrintOutEveryGenFunc]
-        else:
-            statRegisters.append(self.EC_DynamicOpt_HyperMutation_PrintOutEveryGenFunc)
+        # if statRegisters is None:
+        #     statRegisters = [self.EC_DynamicOpt_HyperMutation_PrintOutEveryGenFunc]
+        # else:
+        #     statRegisters.append(self.EC_DynamicOpt_HyperMutation_PrintOutEveryGenFunc)
 
         if changeDetectorRegisters is None:
             if ECArgs.get("performanceThreshold"):

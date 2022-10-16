@@ -190,7 +190,7 @@ class EC_Base:
         while self.shouldContinue(self.otherTerminalHandler):
             self.optimizeInner()
 
-        return np.array(self.bestChromosome[self.BEST_IN_ALL_GEN_DIM_INDEX]), \
+        return np.array(self.bestChromosome[:, self.BEST_IN_ALL_GEN_DIM_INDEX]), \
                self.bestChromosomesAimFuncValue[self.BEST_IN_ALL_GEN_DIM_INDEX]
 
     def optimizeInner(self):
@@ -354,14 +354,14 @@ class EC_Base:
                 self.chromosomesFittingValue[index][valDim], self.chromosomesAimFuncValue[index][valDim]
             if valDim == self.CHROMOSOME_DIM_INDEX:
                 self.bestChromosomeIndex = index
-                self.bestChromosome[self.BEST_IN_NOW_GEN_DIM_INDEX] = np.array(self.chromosomes[:, index])
+                self.bestChromosome[:, self.BEST_IN_NOW_GEN_DIM_INDEX] = np.array(self.chromosomes[:, index])
             else:
                 self.bestChromosomeIndex = index + self.Np
-                self.bestChromosome[self.BEST_IN_NOW_GEN_DIM_INDEX] = np.array(self.middleChromosomes[:, index])
+                self.bestChromosome[:, self.BEST_IN_NOW_GEN_DIM_INDEX] = np.array(self.middleChromosomes[:, index])
 
             if self.cmpFitting(self.bestChromosomesFittingValue[self.BEST_IN_NOW_GEN_DIM_INDEX],
                                self.bestChromosomesFittingValue[self.BEST_IN_ALL_GEN_DIM_INDEX]) > 0:
                 self.bestChromosomesFittingValue[self.BEST_IN_ALL_GEN_DIM_INDEX], self.bestChromosomesAimFuncValue[
                     self.BEST_IN_ALL_GEN_DIM_INDEX] = self.bestChromosomesFittingValue[self.BEST_IN_NOW_GEN_DIM_INDEX], \
                                                       self.bestChromosomesAimFuncValue[self.BEST_IN_NOW_GEN_DIM_INDEX]
-                self.bestChromosome[self.BEST_IN_ALL_GEN_DIM_INDEX] = np.array(self.bestChromosome[self.BEST_IN_NOW_GEN_DIM_INDEX])
+                self.bestChromosome[:, self.BEST_IN_ALL_GEN_DIM_INDEX] = np.array(self.bestChromosome[:, self.BEST_IN_NOW_GEN_DIM_INDEX])

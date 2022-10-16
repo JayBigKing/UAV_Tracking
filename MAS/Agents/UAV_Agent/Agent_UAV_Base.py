@@ -28,7 +28,7 @@ class Agent_UAV_Base(Agent_WithStat_Base):
         self.deltaTime = deltaTime
         self.coordinateVector = [[self.positionState[0], self.positionState[1]]]
 
-    def update(self):
+    def updateInner(self):
         self.moving()
         for item in self.statFuncReg:
             item(positionState=True)

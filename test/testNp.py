@@ -1,5 +1,6 @@
 import numpy as np
 import bisect
+from Jay_Tool.EfficiencyTestTool.EfficiencyTestTool import clockTester
 def test1():
     np1 = np.array([float(i) for i in range(10)])
     np2 = np.zeros((10,2))
@@ -81,6 +82,18 @@ def test10():
     for item in n1:
         print(item)
 
+@clockTester
+def test11():
+    n0 = np.array([i + 10 for i in range(20)])
+    for i in range(20000):
+        a = len(n0)
+
+@clockTester
+def test12():
+    n0 = np.array([i + 10 for i in range(20)])
+    for i in range(20000):
+        a = n0.size
+
 def main():
     # test1()
     # test2()
@@ -91,7 +104,10 @@ def main():
     # test7()
     # test8()
     # test9()
-    test10()
+    # test10()
+    test12()
+    test11()
+
 
 if __name__ == "__main__":
     main()

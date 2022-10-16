@@ -18,8 +18,13 @@ class Agent_WithStat_Base(Agent_Base):
 
         self.statFuncReg = statFuncListGenerator(statRegisters, self.__AGENT_STAT_DEFAULT_FUNC_MAP)
 
-    def update(self):
+    def updateInner(self):
         pass
+
+    def update(self):
+        self.updateInner()
+        # for item in self.statFuncReg:
+        #     item(optimizationResult = self.optimizationResult)
 
     # def optimization(self):
     #     super().optimizer()

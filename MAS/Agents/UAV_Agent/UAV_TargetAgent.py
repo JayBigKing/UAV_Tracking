@@ -39,7 +39,7 @@ class UAV_TargetAgent(Agent_UAV_Base):
     def movingAsSin(self, *args):
 
         self.positionState[0] = self.positionState[0] + self.deltaTime
-        self.positionState[1] = self.positionState[1] + 4.5 * np.sin(np.deg2rad(self.positionState[2] * self.deltaTime))
+        self.positionState[1] = self.positionState[1] + 2.5 * np.sin(np.deg2rad(self.positionState[2] * self.deltaTime))
         self.positionState[2] = self.positionState[2] + 90 * self.deltaTime
 
     def randMoving(self, *args):

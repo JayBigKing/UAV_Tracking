@@ -15,14 +15,14 @@ from MAS.MultiAgentSystem.UAV_MAS import UAV_NashMAS
 
 
 def experiment1():
-    AGENTS_NUM = 1
+    AGENTS_NUM = 2
     AGENT_CLS = UAV_Agent.UAV_Agent
     OPTIMIZER_CLS = EC_DynamicOpt_HyperMutation
     TARGET_CLS = UAV_TargetAgent.UAV_TargetAgent
     MAS_CLS = UAV_NashMAS.UAV_NashMAS
 
-    DELTA_TIME = .1
-    AGENT_INIT_POSITION_RANGE = [[10., 11.], [10., 11.]]
+    DELTA_TIME = .5
+    AGENT_INIT_POSITION_RANGE = [[10., 100.], [10., 100.]]
     AGENT_SELF_INIT_ARGS = {
         "initPositionState": [random.uniform(AGENT_INIT_POSITION_RANGE[0][0], AGENT_INIT_POSITION_RANGE[0][1]),
                               random.uniform(AGENT_INIT_POSITION_RANGE[1][0], AGENT_INIT_POSITION_RANGE[1][1]),
@@ -31,16 +31,26 @@ def experiment1():
         "angularVelocity":[-360., 360.],
         "deltaTime":DELTA_TIME,
     }
+    AGENT_SELF_INIT_ARGS_LIST = [{
+        "initPositionState": [random.uniform(AGENT_INIT_POSITION_RANGE[0][0], AGENT_INIT_POSITION_RANGE[0][1]),
+                              random.uniform(AGENT_INIT_POSITION_RANGE[1][0], AGENT_INIT_POSITION_RANGE[1][1]),
+                              0],
+        "linearVelocityRange":[0., 10.],
+        "angularVelocity":[-360., 360.],
+        "deltaTime":DELTA_TIME,
+    }   for i in range(AGENTS_NUM)]
     AGENT_COMPUTATION_ARGS = {
-        "sameBestFittingCountThreshold": 20,
-        "bestFittingSameThreshold": 1e-4,
+        "predictVelocityLen": 1,
+        "usePredictVelocityLen": 1,
+        "sameBestFittingCountThreshold": 10,
+        "fittingIsSameThreshold": 1e-4,
         "JTaskFactor": 1.,
-        "JConsumeFactor": 1.,
-        "JCollisionFactor": 1.,
-        "JCommunicationFactor": 1.,
+        "JConFactor": 1.,
+        "JColFactor": 1.,
+        "JComFactor": 1.,
     }
     AGENT_ARGS = {
-        "initArgs":AGENT_SELF_INIT_ARGS,
+        "initArgs":AGENT_SELF_INIT_ARGS_LIST,
         "computationArgs":AGENT_COMPUTATION_ARGS,
     }
     EC_INIT_ARGS = {
@@ -71,7 +81,7 @@ def experiment1():
                               0],
         "linearVelocityRange": [0., 10.],
         "angularVelocity": [-30., 30.],
-        "movingFuncRegister":"movingStraightly",
+        "movingFuncRegister":"randMoving",
         "deltaTime": DELTA_TIME,
     }
     MAS_ARGS = {
@@ -80,7 +90,7 @@ def experiment1():
         "oneDiffNashBalanceValue": 1e-4
     }
 
-    NEED_RUNNING_TIME = 20
+    NEED_RUNNING_TIME = 50
 
 
     uav_scene_base = UAV_Scene_Base(agentsNum=AGENTS_NUM,

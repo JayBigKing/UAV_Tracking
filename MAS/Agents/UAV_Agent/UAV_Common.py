@@ -10,9 +10,19 @@
 import numpy as np
 
 def calcMovingForUAV(x, u, time):
-    res = np.zeros(3)
+    # res = np.zeros(3)
+    #
+    # res[2] = u[1]
+    # res[0] = x[0] + u[0] * np.cos(np.deg2rad(res[2])) * time
+    # res[1] = x[1] + u[0] * np.sin(np.deg2rad(res[2])) * time
+
+    # res = np.zeros(3)
+    # res[0] = x[0] + u[0] * np.cos(np.deg2rad(x[2])) * time
+    # res[1] = x[1] + u[0] * np.sin(np.deg2rad(x[2])) * time
     # res[2] = x[2] + u[1] * time
-    res[2] = u[1]
+
+    res = np.zeros(3)
+    res[2] = x[2] + u[1] * time
     res[0] = x[0] + u[0] * np.cos(np.deg2rad(res[2])) * time
     res[1] = x[1] + u[0] * np.sin(np.deg2rad(res[2])) * time
 

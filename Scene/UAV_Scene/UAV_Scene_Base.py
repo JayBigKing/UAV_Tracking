@@ -17,7 +17,7 @@ class UAV_Scene_Base(Scene_Base):
         self.agentsNum = agentsNum
         self.targetNum = targetNum
         self.deltaTime = deltaTime
-        if isinstance(agentsArgs, list) is False:
+        if isinstance(agentsArgs["initArgs"], list) is False:
             self.agents = [agentsCls(initPositionState=agentsArgs["initArgs"]["initPositionState"],
                                      linearVelocityRange=agentsArgs["initArgs"]["linearVelocityRange"],
                                      angularVelocity=agentsArgs["initArgs"]["angularVelocity"],
@@ -27,10 +27,10 @@ class UAV_Scene_Base(Scene_Base):
                                      optimizerComputationArgs=optimizerArgs["optimizerComputationArgs"],
                                      deltaTime=deltaTime) for i in range(agentsNum)]
         else:
-            self.agents = [agentsCls(initPositionState=agentsArgs[i]["initArgs"]["initPositionState"],
-                                     linearVelocityRange=agentsArgs[i]["initArgs"]["linearVelocityRange"],
-                                     angularVelocity=agentsArgs[i]["initArgs"]["angularVelocity"],
-                                     agentArgs=agentsArgs[i]["computationArgs"],
+            self.agents = [agentsCls(initPositionState=agentsArgs["initArgs"][i]["initPositionState"],
+                                     linearVelocityRange=agentsArgs["initArgs"][i]["linearVelocityRange"],
+                                     angularVelocity=agentsArgs["initArgs"][i]["angularVelocity"],
+                                     agentArgs=agentsArgs["computationArgs"],
                                      optimizerCls=optimizerCls,
                                      optimizerInitArgs=optimizerArgs["optimizerInitArgs"],
                                      optimizerComputationArgs=optimizerArgs["optimizerComputationArgs"],
