@@ -83,3 +83,5 @@ class UAV_Scene_Base(Scene_Base):
         else:
             for item in self.targets:
                 item.update()
+
+

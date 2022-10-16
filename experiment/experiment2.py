@@ -8,27 +8,30 @@
 @Time    : 2022/10/14 15:24
 """
 import random
+
+import numpy as np
+
 from Scene.UAV_Scene.UAV_Scene_Base import UAV_Scene_Base
 from MAS.Agents.UAV_Agent import UAV_Agent, UAV_TargetAgent
 from EC.dynamicOpt.EC_DynamicOpt_HyperMutation import EC_DynamicOpt_HyperMutation
 from MAS.MultiAgentSystem.UAV_MAS import UAV_NashMAS
 
 
-def experiment1():
-    AGENTS_NUM = 2
+def experimentBase():
+    AGENTS_NUM = 3
     AGENT_CLS = UAV_Agent.UAV_Agent
     OPTIMIZER_CLS = EC_DynamicOpt_HyperMutation
     TARGET_CLS = UAV_TargetAgent.UAV_TargetAgent
     MAS_CLS = UAV_NashMAS.UAV_NashMAS
 
-    DELTA_TIME = .5
-    AGENT_INIT_POSITION_RANGE = [[10., 100.], [10., 100.]]
+    DELTA_TIME = 0.1
+    AGENT_INIT_POSITION_RANGE = [[10., 60.], [10., 60.]]
     AGENT_SELF_INIT_ARGS = {
         "initPositionState": [random.uniform(AGENT_INIT_POSITION_RANGE[0][0], AGENT_INIT_POSITION_RANGE[0][1]),
                               random.uniform(AGENT_INIT_POSITION_RANGE[1][0], AGENT_INIT_POSITION_RANGE[1][1]),
                               0],
-        "linearVelocityRange":[0., 10.],
-        "angularVelocity":[-360., 360.],
+        "linearVelocityRange":[0., 15.],
+        "angularVelocity":[-200., 200.],
         "deltaTime":DELTA_TIME,
     }
     AGENT_SELF_INIT_ARGS_LIST = [{
@@ -90,7 +93,7 @@ def experiment1():
         "oneDiffNashBalanceValue": 1e-4
     }
 
-    NEED_RUNNING_TIME = 50
+    NEED_RUNNING_TIME = 300
 
 
     uav_scene_base = UAV_Scene_Base(agentsNum=AGENTS_NUM,
@@ -105,10 +108,25 @@ def experiment1():
                                     needRunningTime=NEED_RUNNING_TIME,
                                     deltaTime=DELTA_TIME)
 
+    return uav_scene_base
+
+def experiment1():
+    uav_scene_base = experimentBase()
     uav_scene_base.run()
 
+
+def experimentTestDisBetweenUAVs():
+    uav_scene_base = experimentBase()
+    uav_scene_base.run()
+    needRunningTime = uav_scene_base.needRunningTimes
+    multiAgentSystem = uav_scene_base.multiAgentSystem
+    multiAgentSystem.UAVDisStatMatrix[:, :, 0] = multiAgentSystem.UAVDisStatMatrix[:, :, 0] / needRunningTime
+    if hasattr(multiAgentSystem, "UAVDisStatMatrix"):
+        print('avg distance matrix is : %r' % multiAgentSystem.UAVDisStatMatrix)
+
 def main():
-    experiment1()
+    # experiment1()
+    experimentTestDisBetweenUAVs()
 
 if __name__ == "__main__":
     main()

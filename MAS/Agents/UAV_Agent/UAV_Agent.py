@@ -27,7 +27,9 @@ class UAV_Agent(Agent_UAV_Base):
         "JColFactor": 1.,
         "JComFactor": 1.,
         "minDistanceThreshold": 10.,
-        "smallDistanceBlameFactor": 10.
+        "smallDistanceBlameFactor": 19.,
+        "maxDistanceThreshold":30.,
+        "bigDistanceBlameFactor": 15.,
     }
 
     def __init__(self, initPositionState, linearVelocityRange, angularVelocity, optimizerCls, agentArgs,
@@ -123,12 +125,12 @@ class UAV_Agent(Agent_UAV_Base):
         return int((velocityIndex) * velocityLen), int((velocityIndex + 1) * velocityLen)
 
     def evalVars(self, chromosome):
-        # return self.agentArgs["JTaskFactor"] * self.evalVars_JTask(chromosome, self.predictVelocityLen) + \
-        #        self.agentArgs["JConFactor"] * self.evalVars_JConsume(chromosome,self.predictVelocityLen) + \
-        #        self.agentArgs["JColFactor"] * self.evalVars_JCollision(chromosome, self.predictVelocityLen) + \
-        #        self.agentArgs["JComFactor"] * self.evalVars_JCommunication(chromosome, self.predictVelocityLen)
-        return self.agentArgs["JTaskFactor"] * self.evalVars_JTask(chromosome,
-                                                                   self.predictVelocityLen)
+        return self.agentArgs["JTaskFactor"] * self.evalVars_JTask(chromosome, self.predictVelocityLen) + \
+               self.agentArgs["JConFactor"] * self.evalVars_JConsume(chromosome,self.predictVelocityLen) + \
+               self.agentArgs["JColFactor"] * self.evalVars_JCollision(chromosome, self.predictVelocityLen) + \
+               self.agentArgs["JComFactor"] * self.evalVars_JCommunication(chromosome, self.predictVelocityLen)
+        # return self.agentArgs["JTaskFactor"] * self.evalVars_JTask(chromosome,
+        #                                                            self.predictVelocityLen)
 
     def evalVars_JTask(self, chromosome, *args):
         predictVelocityLen = args[0]
@@ -155,23 +157,24 @@ class UAV_Agent(Agent_UAV_Base):
         for index, item in enumerate(self.agentCrowd["positionState"]):
             if index != self.selfIndex:
 
-                distanceFromItem = calcDistance(newPositionState, item)
+                distanceFromItem = calcDistance(newPositionState[0:2], item[0:2])
                 minDistanceThreshold = self.agentArgs["minDistanceThreshold"]
                 if distanceFromItem < minDistanceThreshold:
-                    JCollisionVal += self.agentArgs["smallDistanceBlameFactor"] * (
+                    JCollisionVal += self.agentArgs["smallDistanceBlameFactor"] + self.agentArgs["smallDistanceBlameFactor"] * (
                             minDistanceThreshold - distanceFromItem) / minDistanceThreshold
 
         return JCollisionVal
 
     def evalVars_JCommunication(self, chromosome, *args):
+        # return 0.
         JCommunicationVal = 0.
         newPositionState = calcMovingForUAV(self.positionState, chromosome, self.deltaTime)
         for index, item in enumerate(self.agentCrowd["positionState"]):
             if index != self.selfIndex:
-                distanceFromItem = calcDistance(newPositionState, item)
+                distanceFromItem = calcDistance(newPositionState[0:2], item[0:2])
                 maxDistanceThreshold = self.agentArgs["maxDistanceThreshold"]
                 if distanceFromItem > maxDistanceThreshold:
-                    JCommunicationVal += self.agentArgs["bigDistanceBlameFactor"] * Jay_sigmoid(
+                    JCommunicationVal += self.agentArgs["bigDistanceBlameFactor"] + self.agentArgs["bigDistanceBlameFactor"] * Jay_sigmoid(
                         distanceFromItem - maxDistanceThreshold) + 2.
 
         return JCommunicationVal

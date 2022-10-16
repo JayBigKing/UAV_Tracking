@@ -42,18 +42,29 @@ class UAV_MAS_Base(MAS_WithStat_Base):
     following is stat function
     '''
     def UAV_MAS_Stat_recordDisOfUAVs(self, **kwargs):
+        agentLen = len(self.agents)
         if hasattr(self, 'UAVDisMatrix') is False:
-            self.UAVDisMatrix = np.zeros((len(self.agents), len(self.agents)))
+            self.UAVDisMatrix = np.zeros((agentLen, agentLen))
+        if hasattr(self, 'UAVDisStatMatrix') is False:
+            self.UAVDisStatMatrix = np.zeros((agentLen, agentLen, 2))
+            for i in range(agentLen):
+                for j in range(agentLen):
+                    if i != j:
+                        self.UAVDisStatMatrix[i, j, 1] = 1e10
+
 
         for index, item in enumerate(self.agents):
-            for j in range(len(self.agents)):
+            for j in range(agentLen):
                 if index != j:
                     if j < index:
                         self.UAVDisMatrix[index, j] = self.UAVDisMatrix[j, index]
                     else:
                         self.UAVDisMatrix[index, j] = calcDistance(item.positionState[0: 2], self.agents[j].positionState[0: 2])
 
+                    self.UAVDisStatMatrix[index, j, 0] += self.UAVDisMatrix[index, j]
+                    self.UAVDisStatMatrix[index, j, 1] = min(self.UAVDisMatrix[index, j], self.UAVDisStatMatrix[index, j, 1])
 
         print(self.UAVDisMatrix)
+
 
 
