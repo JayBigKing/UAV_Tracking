@@ -23,8 +23,8 @@ class Agent_WithStat_Base(Agent_Base):
 
     def update(self):
         self.updateInner()
-        # for item in self.statFuncReg:
-        #     item(optimizationResult = self.optimizationResult)
+        for item in self.statFuncReg:
+            item(optimizationResult = self.optimizationResult)
 
     # def optimization(self):
     #     super().optimizer()
