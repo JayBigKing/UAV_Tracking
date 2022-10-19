@@ -93,14 +93,15 @@ class UAV_Agent(Agent_UAV_Base):
         if self.remainMoving == 0:
             super().optimization()
             self.predictVelocityList = self.optimizationResult[0]
-            self.remainMoving = self.agentArgs["usePredictVelocityLen"]
+            # self.remainMoving = self.agentArgs["usePredictVelocityLen"]
         for item in self.statFuncReg:
             item(optimizationResult = self.optimizationResult)
 
     def updateInner(self):
-        if self.remainMoving > 0:
-            super().updateInner()
-            self.remainMoving -= 1
+        if self.remainMoving == 0:
+            self.remainMoving = self.agentArgs["usePredictVelocityLen"]
+        super().updateInner()
+        self.remainMoving -= 1
 
     def moving(self):
         startIndex, endIndex = self.getVelocityFromPredictVelocityList(self.agentArgs["usePredictVelocityLen"] - self.remainMoving)
