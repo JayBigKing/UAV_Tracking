@@ -19,17 +19,17 @@ class UAV_MAS_Base(MAS_WithStat_Base):
     def optimizationPreProcess(self):
         agentsPositionState = []
         agentsVelocity = []
-        agentsOptimizationResult = []
+        predictVelocityList = []
 
         for item in self.agents:
             agentsPositionState.append(item.positionState)
             agentsVelocity.append(item.velocity)
-            agentsOptimizationResult.append(item.optimizationResult)
+            predictVelocityList.append(item.predictVelocityList)
 
         self.agentCrowd = {
             "positionState": agentsPositionState,
             "velocity": agentsVelocity,
-            "optimizationResult": agentsOptimizationResult
+            "predictVelocityList": predictVelocityList
         }
 
         for index, item in enumerate(self.agents):

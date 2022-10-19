@@ -24,6 +24,14 @@ class UAV_NashMAS(UAV_MAS_Base):
         self.lastAgentOptimizationRes = []
         self.NashMas_Args = ArgsDictValueController(masArgs, self.__NASH_MAS_DEFAULT_ARGS, onlyUseDefaultKey=True)
 
+    def communication(self):
+        predictVelocityList = [item.predictVelocityList for item in self.agents]
+
+        self.agentCrowd["predictVelocityList"] = predictVelocityList
+
+        for index, item in enumerate(self.agents):
+            item.recvMeg(agentCrowd=self.agentCrowd, selfIndex=index, targetPosition=self.targetPosition)
+
     def terminalHandler(self, agents=None, initFlag=False):
         if initFlag is True:
             self.lastAgentOptimizationRes = []

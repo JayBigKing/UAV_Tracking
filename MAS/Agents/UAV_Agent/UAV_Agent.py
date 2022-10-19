@@ -65,13 +65,14 @@ class UAV_Agent(Agent_UAV_Base):
                          optimizer=optimizer,
                          deltaTime=deltaTime)
 
+        self.predictVelocityList = np.zeros(optimizerInitArgs["optimizerLearningDimNum"])
         self.sameBestFittingCount = 0
         self.lastBestChromosomesFittingValue = -1
         self.height = height
         self.remainMoving = 0
 
     def sendMeg(self):
-        return self.positionState, self.velocity, self.optimizationResult
+        return self.positionState, self.velocity, self.predictVelocityList
 
     def recvMeg(self, **kwargs):
         self.agentCrowd = kwargs["agentCrowd"]
@@ -134,7 +135,7 @@ class UAV_Agent(Agent_UAV_Base):
 
     def evalVars_JTask(self, chromosome, *args):
         predictVelocityLen = args[0]
-        JTaskList = np.zeros(self.agentArgs["predictVelocityLen"])
+        JTaskList = np.zeros(predictVelocityLen)
         oldPositionList = [self.positionState]
 
         for i in range(predictVelocityLen):
@@ -153,14 +154,29 @@ class UAV_Agent(Agent_UAV_Base):
 
     def evalVars_JCollision(self, chromosome, *args):
         JCollisionVal = 0.
-        newPositionState = calcMovingForUAV(self.positionState, chromosome, self.deltaTime)
+        predictVelocityLen = args[0]
+
         for index, item in enumerate(self.agentCrowd["positionState"]):
             if index != self.selfIndex:
+                oldPositionList = self.positionState
+                oldPositionListForItem = item
+                chromosomeForItem = self.agentCrowd["predictVelocityList"][index]
+                JCollisionList = np.zeros(predictVelocityLen)
 
-                distanceFromItem = calcDistance(newPositionState[0:2], item[0:2])
+                for i in range(predictVelocityLen):
+                    startIndex, endIndex = self.getVelocityFromPredictVelocityList(i)
+                    newPositionState = calcMovingForUAV(oldPositionList, chromosome[startIndex: endIndex],
+                                                        self.deltaTime)
+                    newPositionStateForItem = calcMovingForUAV(oldPositionListForItem, chromosomeForItem[startIndex: endIndex],
+                                                        self.deltaTime)
+                    JCollisionList[i] = calcDistance(newPositionState[0: 2], newPositionStateForItem[0: 2])
+                    oldPositionList = newPositionState
+                    oldPositionListForItem = newPositionStateForItem
+
+                distanceFromItem = np.average(JCollisionList)
                 minDistanceThreshold = self.agentArgs["minDistanceThreshold"]
                 if distanceFromItem < minDistanceThreshold:
-                    JCollisionVal += self.agentArgs["smallDistanceBlameFactor"] + self.agentArgs["smallDistanceBlameFactor"] * (
+                    JCollisionVal += self.agentArgs["smallDistanceBlameFactor"] * (
                             minDistanceThreshold - distanceFromItem) / minDistanceThreshold
 
         return JCollisionVal
