@@ -13,10 +13,11 @@ from MAS.Agents.UAV_Agent.UAV_Common import calcMovingForUAV
 
 
 class Agent_UAV_Base(Agent_WithStat_Base):
-    def __init__(self, initPositionState, linearVelocityRange, angularVelocity, optimizer=None, deltaTime=1.):
+    def __init__(self, initPositionState, linearVelocityRange, angularVelocity, maxVariationOfLinearSpeed = 2., optimizer=None, deltaTime=1.):
         super().__init__(optimizer=optimizer, statRegisters=[self.coordinateRecord])
         self.positionState = np.array(initPositionState)  # 0:x轴，1:y轴，2:航向角
         self.linearVelocityRange = np.array(linearVelocityRange)
+        self.linearSpeedChangeRange = np.array([-abs(maxVariationOfLinearSpeed), abs(maxVariationOfLinearSpeed)])
         self.angularVelocity = np.array(angularVelocity)
         if self.linearVelocityRange[0] > self.linearVelocityRange[1]:
             self.linearVelocityRange[0], self.linearVelocityRange[1] = self.linearVelocityRange[1], \

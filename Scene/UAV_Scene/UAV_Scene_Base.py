@@ -17,6 +17,14 @@ class UAV_Scene_Base(Scene_Base):
         self.agentsNum = agentsNum
         self.targetNum = targetNum
         self.deltaTime = deltaTime
+
+        self._initAgents(agentsCls, agentsArgs, optimizerCls, optimizerArgs, deltaTime)
+        self._initTargets(targetCls, targetArgs, deltaTime)
+        self._initMAS(MAS_Cls, self.agents, MAS_Args, deltaTime)
+
+        super().__init__(self.agents, self.multiAgentSystem, needRunningTime)
+
+    def _initAgents(self, agentsCls, agentsArgs, optimizerCls, optimizerArgs, deltaTime):
         if isinstance(agentsArgs["initArgs"], list) is False:
             self.agents = [agentsCls(initPositionState=agentsArgs["initArgs"]["initPositionState"],
                                      linearVelocityRange=agentsArgs["initArgs"]["linearVelocityRange"],
@@ -25,7 +33,7 @@ class UAV_Scene_Base(Scene_Base):
                                      optimizerCls=optimizerCls,
                                      optimizerInitArgs=optimizerArgs["optimizerInitArgs"],
                                      optimizerComputationArgs=optimizerArgs["optimizerComputationArgs"],
-                                     deltaTime=deltaTime) for i in range(agentsNum)]
+                                     deltaTime=deltaTime) for i in range(self.agentsNum)]
         else:
             self.agents = [agentsCls(initPositionState=agentsArgs["initArgs"][i]["initPositionState"],
                                      linearVelocityRange=agentsArgs["initArgs"][i]["linearVelocityRange"],
@@ -34,8 +42,9 @@ class UAV_Scene_Base(Scene_Base):
                                      optimizerCls=optimizerCls,
                                      optimizerInitArgs=optimizerArgs["optimizerInitArgs"],
                                      optimizerComputationArgs=optimizerArgs["optimizerComputationArgs"],
-                                     deltaTime=deltaTime) for i in range(agentsNum)]
+                                     deltaTime=deltaTime) for i in range(self.agentsNum)]
 
+    def _initTargets(self, targetCls, targetArgs, deltaTime):
         if self.targetNum == 1:
             self.targets = [targetCls(initPositionState=targetArgs["initPositionState"],
                                       linearVelocityRange=targetArgs["linearVelocityRange"],
@@ -44,21 +53,21 @@ class UAV_Scene_Base(Scene_Base):
                                       deltaTime=deltaTime)]
             self.target = self.targets[0]
         else:
-            if isinstance(agentsArgs, list) is False:
+            if isinstance(targetArgs, list) is False:
                 self.targets = [targetCls(initPositionState=targetArgs["initPositionState"],
                                           linearVelocityRange=targetArgs["linearVelocityRange"],
                                           angularVelocity=targetArgs["angularVelocity"],
                                           movingFuncRegister=targetArgs["movingFuncRegister"],
-                                          deltaTime=deltaTime) for i in range(targetNum)]
+                                          deltaTime=deltaTime) for i in range(self.targetNum)]
             else:
-                self.agents = [targetCls(initPositionState=targetArgs[i]["initPositionState"],
+                self.targets = [targetCls(initPositionState=targetArgs[i]["initPositionState"],
                                          linearVelocityRange=targetArgs[i]["linearVelocityRange"],
                                          angularVelocity=targetArgs[i]["angularVelocity"],
                                          movingFuncRegister=targetArgs[i]["movingFuncRegister"],
-                                         deltaTime=deltaTime) for i in range(targetNum)]
+                                         deltaTime=deltaTime) for i in range(self.targetNum)]
 
-        self.multiAgentSystem = MAS_Cls(self.agents, MAS_Args)
-        super().__init__(self.agents, self.multiAgentSystem, needRunningTime)
+    def _initMAS(self, MAS_Cls, agents, MAS_Args, deltaTime):
+        self.multiAgentSystem = MAS_Cls(agents, MAS_Args)
 
     def runningFinal(self):
         scattersList = [self.target.coordinateVector]

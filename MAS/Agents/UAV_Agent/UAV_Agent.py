@@ -87,7 +87,10 @@ class UAV_Agent(Agent_UAV_Base):
                 self.optimizer.ECArgsDictValueController["fittingMinDenominator"])
 
     def predictTargetMoving(self, targetPosition):
-        return [np.array(targetPosition) for i in range(self.predictVelocityLen)]
+        if isinstance(targetPosition, list) is False:
+            return [np.array(targetPosition) for i in range(self.predictVelocityLen)]
+        else:
+            return targetPosition
 
     def optimization(self):
         if self.remainMoving == 0:
@@ -127,12 +130,12 @@ class UAV_Agent(Agent_UAV_Base):
         return int((velocityIndex) * velocityLen), int((velocityIndex + 1) * velocityLen)
 
     def evalVars(self, chromosome):
-        return self.agentArgs["JTaskFactor"] * self.evalVars_JTask(chromosome, self.predictVelocityLen) + \
-               self.agentArgs["JConFactor"] * self.evalVars_JConsume(chromosome,self.predictVelocityLen) + \
-               self.agentArgs["JColFactor"] * self.evalVars_JCollision(chromosome, self.predictVelocityLen) + \
-               self.agentArgs["JComFactor"] * self.evalVars_JCommunication(chromosome, self.predictVelocityLen)
-        # return self.agentArgs["JTaskFactor"] * self.evalVars_JTask(chromosome,
-        #                                                            self.predictVelocityLen)
+        # return self.agentArgs["JTaskFactor"] * self.evalVars_JTask(chromosome, self.predictVelocityLen) + \
+        #        self.agentArgs["JConFactor"] * self.evalVars_JConsume(chromosome,self.predictVelocityLen) + \
+        #        self.agentArgs["JColFactor"] * self.evalVars_JCollision(chromosome, self.predictVelocityLen) + \
+        #        self.agentArgs["JComFactor"] * self.evalVars_JCommunication(chromosome, self.predictVelocityLen)
+        return self.agentArgs["JTaskFactor"] * self.evalVars_JTask(chromosome,
+                                                                   self.predictVelocityLen)
 
     def evalVars_JTask(self, chromosome, *args):
         predictVelocityLen = args[0]
