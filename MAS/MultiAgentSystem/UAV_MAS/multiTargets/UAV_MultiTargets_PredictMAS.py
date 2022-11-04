@@ -24,9 +24,9 @@ class UAV_MultiTargets_PredictMAS(UAV_MultiTargets_MAS_Base):
         "kalman_R": (np.diag([1.0, 1.0]) ** 2)
     }
     def __init__(self, agents, masArgs, targetNum, terminalHandler=None, predictorCls=None, deltaTime=1.):
-        super().__init__(agents, masArgs, targetNum, terminalHandler)
+        super().__init__(agents, masArgs, targetNum, terminalHandler, deltaTime)
         self.predictMas_Args = ArgsDictValueController(masArgs, self.__UAV_MULTI_TARGET_PREDICT_MAS_DEFAULT_ARGS)
-        self.deltaTime = deltaTime
+
         if predictorCls is None:
             self.predictorCls = ExtendedKalmanFilter
             self.trajectoryPredictorList = [self.predictorCls(self.predictMas_Args["kalman_Q"],

@@ -17,7 +17,7 @@ from MAS.MultiAgentSystem.UAV_MAS import UAV_PredictMAS
 
 
 def experimentBase():
-    AGENTS_NUM = 1
+    AGENTS_NUM = 2
     AGENT_CLS = UAV_Agent.UAV_Agent
     OPTIMIZER_CLS = EC_DynamicOpt_InitAndHyperMutation
     TARGET_CLS = UAV_TargetAgent.UAV_TargetAgent

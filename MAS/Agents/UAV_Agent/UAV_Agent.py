@@ -13,7 +13,6 @@ from EC.EC_Common import ArgsDictValueController
 from EC.EC_Base import EC_OtimizeWay
 from MAS.Agents.UAV_Agent.Agent_UAV_Base import Agent_UAV_Base
 from MAS.Agents.UAV_Agent.UAV_Common import calcMovingForUAV, calcDistance
-from copy import deepcopy
 
 
 class UAV_Agent(Agent_UAV_Base):

@@ -13,10 +13,11 @@ from Jay_Tool.visualizeTool.CoorDiagram import CoorDiagram
 
 class UAV_Scene_Base(Scene_Base):
     def __init__(self, agentsNum, agentsCls, agentsArgs, optimizerCls, optimizerArgs, targetCls, targetArgs, MAS_Cls,
-                 MAS_Args, needRunningTime, targetNum=1, deltaTime=1.):
+                 MAS_Args, needRunningTime, targetNum=1, deltaTime=1., figureSavePath = None):
         self.agentsNum = agentsNum
         self.targetNum = targetNum
         self.deltaTime = deltaTime
+        self.figureSavePath = figureSavePath
 
         self._initAgents(agentsCls, agentsArgs, optimizerCls, optimizerArgs, deltaTime)
         self._initTargets(targetCls, targetArgs, deltaTime)
@@ -75,8 +76,13 @@ class UAV_Scene_Base(Scene_Base):
         for i, item  in enumerate(self.agents):
             scattersList.append(item.coordinateVector)
             nameList.append(r"uav %d" % i)
+
         cd = CoorDiagram()
-        cd.drawManyScattersInOnePlane(scattersList, nameList=nameList)
+        if self.figureSavePath is None:
+            cd.drawManyScattersInOnePlane(scattersList, nameList=nameList)
+        else:
+            cd.setStorePath(self.figureSavePath)
+            cd.drawManyScattersInOnePlane(scattersList, nameList=nameList, ifSaveFig=True)
 
     def runningInner(self):
         if self.targetNum == 1:

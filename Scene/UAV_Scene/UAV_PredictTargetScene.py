@@ -11,10 +11,10 @@ from Scene.UAV_Scene.UAV_Scene_Base import UAV_Scene_Base
 
 class UAV_PredictTargetScene(UAV_Scene_Base):
     def __init__(self, agentsNum, agentsCls, agentsArgs, optimizerCls, optimizerArgs, targetCls, targetArgs, MAS_Cls,
-                 MAS_Args, needRunningTime, predictorCls = None, targetNum=1, deltaTime=1.):
+                 MAS_Args, needRunningTime, predictorCls = None, targetNum=1, deltaTime=1., figureSavePath = None):
         MAS_Args["predictorCls"] = predictorCls
         super().__init__(agentsNum, agentsCls, agentsArgs, optimizerCls, optimizerArgs, targetCls, targetArgs, MAS_Cls,
-                 MAS_Args, needRunningTime, targetNum, deltaTime)
+                 MAS_Args, needRunningTime, targetNum, deltaTime, figureSavePath)
 
 
     def _initMAS(self, MAS_Cls, agents, MAS_Args, deltaTime):

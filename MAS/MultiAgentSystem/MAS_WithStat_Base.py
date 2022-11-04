@@ -28,6 +28,7 @@ class MAS_WithStat_Base(MAS_Base):
 
     def update(self):
         super().update()
-        for item in self.statFuncReg:
-            item()
+        if self.agents[0].firstRun is False:
+            for item in self.statFuncReg:
+                item()
 

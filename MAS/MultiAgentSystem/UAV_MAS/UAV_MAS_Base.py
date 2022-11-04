@@ -48,6 +48,9 @@ class UAV_MAS_Base(MAS_WithStat_Base):
     '''
     following is stat function
     '''
+    """
+    @brief: using a matrix that record that each one's distance from others.
+    """
     def UAV_MAS_Stat_recordDisOfUAVs(self, **kwargs):
         agentLen = len(self.agents)
         if hasattr(self, 'UAVDisMatrix') is False:
@@ -71,7 +74,7 @@ class UAV_MAS_Base(MAS_WithStat_Base):
                     self.UAVDisStatMatrix[index, j, 0] += self.UAVDisMatrix[index, j]
                     self.UAVDisStatMatrix[index, j, 1] = min(self.UAVDisMatrix[index, j], self.UAVDisStatMatrix[index, j, 1])
 
-        print(self.UAVDisMatrix)
+        print('recordDisOfUAVs: %r'% self.UAVDisMatrix)
 
 
 
