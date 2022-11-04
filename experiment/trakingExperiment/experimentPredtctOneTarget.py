@@ -12,13 +12,14 @@ from Jay_Tool.EfficiencyTestTool.EfficiencyTestTool import clockTester
 from Scene.UAV_Scene.UAV_PredictTargetScene import UAV_PredictTargetScene
 from MAS.Agents.UAV_Agent import UAV_Agent, UAV_TargetAgent
 from EC.dynamicOpt.EC_DynamicOpt_HyperMutation import EC_DynamicOpt_HyperMutation
+from EC.dynamicOpt.EC_DynamicOpt_InitAndHyperMutation import EC_DynamicOpt_InitAndHyperMutation
 from MAS.MultiAgentSystem.UAV_MAS import UAV_PredictMAS
 
 
 def experimentBase():
     AGENTS_NUM = 1
     AGENT_CLS = UAV_Agent.UAV_Agent
-    OPTIMIZER_CLS = EC_DynamicOpt_HyperMutation
+    OPTIMIZER_CLS = EC_DynamicOpt_InitAndHyperMutation
     TARGET_CLS = UAV_TargetAgent.UAV_TargetAgent
     MAS_CLS = UAV_PredictMAS.UAV_PredictMAS
 
@@ -31,7 +32,7 @@ def experimentBase():
                               random.uniform(AGENT_INIT_POSITION_RANGE[1][0], AGENT_INIT_POSITION_RANGE[1][1]),
                               0],
         "linearVelocityRange":[0., 15.],
-        "angularVelocity":[-200., 200.],
+        "angularVelocityRange":[-200., 200.],
         "deltaTime":DELTA_TIME,
     }
     AGENT_SELF_INIT_ARGS_LIST = [{
@@ -39,7 +40,7 @@ def experimentBase():
                               random.uniform(AGENT_INIT_POSITION_RANGE[1][0], AGENT_INIT_POSITION_RANGE[1][1]),
                               0],
         "linearVelocityRange":[0., 15.],
-        "angularVelocity":[-200., 200.],
+        "angularVelocityRange":[-200., 200.],
         "deltaTime":DELTA_TIME,
     }   for i in range(AGENTS_NUM)]
     AGENT_COMPUTATION_ARGS = {
@@ -83,8 +84,8 @@ def experimentBase():
                               random.uniform(TARGET_INIT_POSITION_RANGE[1][0], TARGET_INIT_POSITION_RANGE[1][1]),
                               0],
         "linearVelocityRange": [0., 10.],
-        "angularVelocity": [-30., 30.],
-        "movingFuncRegister":"randMoving",
+        "angularVelocityRange": [-30., 30.],
+        "movingFuncRegister":"movingAsSin",
         "deltaTime": DELTA_TIME,
     }
     MAS_ARGS = {

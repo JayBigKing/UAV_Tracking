@@ -40,8 +40,7 @@ class MAS_Base:
 
     def update(self):
         self.optimization()
-        for agent in self.agents:
-            agent.update()
+        self.updateAgentState()
 
     def optimization(self):
         self.initShouldContinueOptimizationVar(self.terminalHandler)
@@ -53,6 +52,13 @@ class MAS_Base:
         self.communication()
         for agent in self.agents:
             agent.optimization()
+
+    def updateAgentState(self):
+        '''
+        agent take action, then update its state
+        '''
+        for agent in self.agents:
+            agent.update()
 
     def optimizationPreProcess(self):
         pass

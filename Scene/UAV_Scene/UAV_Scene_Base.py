@@ -28,7 +28,7 @@ class UAV_Scene_Base(Scene_Base):
         if isinstance(agentsArgs["initArgs"], list) is False:
             self.agents = [agentsCls(initPositionState=agentsArgs["initArgs"]["initPositionState"],
                                      linearVelocityRange=agentsArgs["initArgs"]["linearVelocityRange"],
-                                     angularVelocity=agentsArgs["initArgs"]["angularVelocity"],
+                                     angularVelocityRange=agentsArgs["initArgs"]["angularVelocityRange"],
                                      agentArgs=agentsArgs["computationArgs"],
                                      optimizerCls=optimizerCls,
                                      optimizerInitArgs=optimizerArgs["optimizerInitArgs"],
@@ -37,7 +37,7 @@ class UAV_Scene_Base(Scene_Base):
         else:
             self.agents = [agentsCls(initPositionState=agentsArgs["initArgs"][i]["initPositionState"],
                                      linearVelocityRange=agentsArgs["initArgs"][i]["linearVelocityRange"],
-                                     angularVelocity=agentsArgs["initArgs"][i]["angularVelocity"],
+                                     angularVelocityRange=agentsArgs["initArgs"][i]["angularVelocityRange"],
                                      agentArgs=agentsArgs["computationArgs"],
                                      optimizerCls=optimizerCls,
                                      optimizerInitArgs=optimizerArgs["optimizerInitArgs"],
@@ -48,7 +48,7 @@ class UAV_Scene_Base(Scene_Base):
         if self.targetNum == 1:
             self.targets = [targetCls(initPositionState=targetArgs["initPositionState"],
                                       linearVelocityRange=targetArgs["linearVelocityRange"],
-                                      angularVelocity=targetArgs["angularVelocity"],
+                                      angularVelocityRange=targetArgs["angularVelocityRange"],
                                       movingFuncRegister=targetArgs["movingFuncRegister"],
                                       deltaTime=deltaTime)]
             self.target = self.targets[0]
@@ -56,13 +56,13 @@ class UAV_Scene_Base(Scene_Base):
             if isinstance(targetArgs, list) is False:
                 self.targets = [targetCls(initPositionState=targetArgs["initPositionState"],
                                           linearVelocityRange=targetArgs["linearVelocityRange"],
-                                          angularVelocity=targetArgs["angularVelocity"],
+                                          angularVelocity=targetArgs["angularVelocityRange"],
                                           movingFuncRegister=targetArgs["movingFuncRegister"],
                                           deltaTime=deltaTime) for i in range(self.targetNum)]
             else:
                 self.targets = [targetCls(initPositionState=targetArgs[i]["initPositionState"],
                                          linearVelocityRange=targetArgs[i]["linearVelocityRange"],
-                                         angularVelocity=targetArgs[i]["angularVelocity"],
+                                         angularVelocity=targetArgs[i]["angularVelocityRange"],
                                          movingFuncRegister=targetArgs[i]["movingFuncRegister"],
                                          deltaTime=deltaTime) for i in range(self.targetNum)]
 
@@ -76,7 +76,7 @@ class UAV_Scene_Base(Scene_Base):
             scattersList.append(item.coordinateVector)
             nameList.append(r"uav %d" % i)
         cd = CoorDiagram()
-        cd.drwaManyScattersInOnePlane(scattersList, nameList=nameList)
+        cd.drawManyScattersInOnePlane(scattersList, nameList=nameList)
 
     def runningInner(self):
         if self.targetNum == 1:

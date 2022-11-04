@@ -19,7 +19,7 @@ def test1():
 
     cd = CoorDiagram()
     scattersList = [target0.coordinateVector]
-    cd.drwaManyScattersInOnePlane(scattersList)
+    cd.drawManyScattersInOnePlane(scattersList, ifSaveFig=True, nameList=["hhh"])
 
 def main():
     test1()

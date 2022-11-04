@@ -183,9 +183,9 @@ class EC_Base:
     def optimize(self):
         if self.firstRun == True:
             self.chromosomeInit()
-            self.bestChromosome = np.zeros((self.dimNum, 2))
+            # self.bestChromosome = np.zeros((self.dimNum, 2))
             self.fitting(isOffspring=False)
-            # self.firstRun = False
+            self.firstRun = False
         self.initShouldContinueVar(self.otherTerminalHandler)
         while self.shouldContinue(self.otherTerminalHandler):
             self.optimizeInner()

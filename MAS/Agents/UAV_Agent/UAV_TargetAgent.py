@@ -14,10 +14,10 @@ from MAS.Agents.UAV_Agent.Agent_UAV_Base import Agent_UAV_Base
 
 
 class UAV_TargetAgent(Agent_UAV_Base):
-    def __init__(self, initPositionState, linearVelocityRange, angularVelocity, maxVariationOfLinearSpeed=2.,
+    def __init__(self, initPositionState, linearVelocityRange, angularVelocityRange, maxVariationOfLinearSpeed=2.,
                  movingFuncRegister="movingStraightly",
                  deltaTime=1.):
-        super().__init__(initPositionState, linearVelocityRange, angularVelocity, maxVariationOfLinearSpeed, None,
+        super().__init__(initPositionState, linearVelocityRange, angularVelocityRange, maxVariationOfLinearSpeed, None,
                          deltaTime)
         self.__UAV_TARGET_AGENT_DEFAULT_MOVING_FUNCTION = {
             "movingAsSin": self.movingAsSin,
@@ -73,7 +73,7 @@ class UAV_TargetAgent(Agent_UAV_Base):
         else:
             self.velocity[0] = newLinearVelocity
 
-        self.velocity[1] = np.random.uniform(self.angularVelocity[0], self.angularVelocity[1])
+        self.velocity[1] = np.random.uniform(self.angularVelocityRange[0], self.angularVelocityRange[1])
 
     def movingStraightly(self, *args):
         ANGLE_THAT_TAN_IS_2 = 63.43495

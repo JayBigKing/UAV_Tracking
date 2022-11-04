@@ -12,8 +12,15 @@ from MAS.MultiAgentSystem.MAS_WithStat_Base import MAS_WithStat_Base
 from MAS.Agents.UAV_Agent.UAV_Common import calcDistance
 
 class UAV_MAS_Base(MAS_WithStat_Base):
-    def __init__(self, agents, masArgs, terminalHandler=None):
-        super().__init__(agents, masArgs, terminalHandler, [self.UAV_MAS_Stat_recordDisOfUAVs])
+    def __init__(self, agents, masArgs, terminalHandler=None, statRegisters=None):
+        self.__UAV_MAS_BASE_DEFAULT_STAT_FUNC_DICT = {
+            "recordDisOfUAVs": self.UAV_MAS_Stat_recordDisOfUAVs
+        }
+
+        if statRegisters is None:
+            statRegisters = [item for item in self.__UAV_MAS_BASE_DEFAULT_STAT_FUNC_DICT]
+
+        super().__init__(agents, masArgs, terminalHandler, statRegisters, self.__UAV_MAS_BASE_DEFAULT_STAT_FUNC_DICT)
         self.lastAgentOptimizationRes = []
 
     def optimizationPreProcess(self):

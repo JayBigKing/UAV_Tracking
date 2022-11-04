@@ -10,13 +10,36 @@
 from inspect import isfunction
 
 def statFuncListGenerator(statRegisters, defaultStatFuncDict):
-    statFuncReg = []
+    statFuncReg = set()
     if statRegisters is not None:
         for item in statRegisters:
             if isinstance(item, str):
-                statFuncReg.append(defaultStatFuncDict[item])
+                statFuncReg.add(defaultStatFuncDict[item])
             else:
-                statFuncReg.append(item)
+                statFuncReg.add(item)
 
     return statFuncReg
 
+def statFuncListAdder(statFuncReg: set, appendFunc) -> None:
+    try:
+        if isfunction(appendFunc):
+            if appendFunc not in statFuncReg:
+                statFuncReg.add(appendFunc)
+        else:
+            raise TypeError("The second input args should be a function"
+                            "Please give a function which you want to add, "
+                            "while the function is also not in the register list")
+    except TypeError as e:
+        print(repr(e))
+
+def statFuncListDeleter(statFuncReg: set, deleteFunc) -> None:
+    try:
+        if isfunction(deleteFunc):
+            if deleteFunc in statFuncReg:
+                statFuncReg.remove(deleteFunc)
+        else:
+            raise TypeError("The second input args should be a function"
+                            "Please give a function which you want to delete, "
+                            "while the function is also in the register list")
+    except TypeError as e:
+        print(repr(e))
