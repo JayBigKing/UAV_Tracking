@@ -3,17 +3,17 @@
 
 """
 @Project : UAV_Traking
-@File    : UAV_MultiTargets_PredictMAS.py
+@File    : UAV_MultiTarget_PredictMAS.py
 @Author  : jay.zhu
 @Time    : 2022/11/2 17:06
 """
 import numpy as np
 from algorithmTool.filterTool.ExtendedKalmanFilter import ExtendedKalmanFilter
 from EC.EC_Common import ArgsDictValueController
-from MAS.MultiAgentSystem.UAV_MAS.multiTargets.UAV_MultiTargets_MAS_Base import UAV_MultiTargets_MAS_Base
+from MAS.MultiAgentSystem.UAV_MAS.multiTarget.UAV_MultiTarget_MAS_Base import UAV_MultiTarget_MAS_Base
 
 
-class UAV_MultiTargets_PredictMAS(UAV_MultiTargets_MAS_Base):
+class UAV_MultiTarget_PredictMAS(UAV_MultiTarget_MAS_Base):
     __UAV_MULTI_TARGET_PREDICT_MAS_DEFAULT_ARGS = {
         "kalman_Q": (np.diag([
             .1,  # variance of location on x-axis

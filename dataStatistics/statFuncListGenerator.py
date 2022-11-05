@@ -13,7 +13,7 @@ def statFuncListGenerator(statRegisters, defaultStatFuncDict):
     statFuncReg = set()
     if statRegisters is not None:
         for item in statRegisters:
-            if isinstance(item, str):
+            if defaultStatFuncDict is not None and isinstance(item, str):
                 statFuncReg.add(defaultStatFuncDict[item])
             else:
                 statFuncReg.add(item)
@@ -29,6 +29,20 @@ def statFuncListAdder(statFuncReg: set, appendFunc) -> None:
             raise TypeError("The second input args should be a function"
                             "Please give a function which you want to add, "
                             "while the function is also not in the register list")
+    except TypeError as e:
+        print(repr(e))
+
+def statFuncListAdderByRegister(statFuncReg: set, statRegisters, defaultStatFuncDict):
+    try:
+        if isinstance(statRegisters, set):
+            if statRegisters is not None:
+                for item in statRegisters:
+                    if defaultStatFuncDict is not None and isinstance(item, str):
+                        statFuncReg.add(defaultStatFuncDict[item])
+                    else:
+                        statFuncReg.add(item)
+        else:
+            raise TypeError("statFuncReg is expected a set instance")
     except TypeError as e:
         print(repr(e))
 

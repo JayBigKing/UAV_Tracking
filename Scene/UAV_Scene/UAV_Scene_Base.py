@@ -9,15 +9,22 @@
 """
 from Scene.Scene_Base import Scene_Base
 from Jay_Tool.visualizeTool.CoorDiagram import CoorDiagram
-
+from dataStatistics.statFuncListGenerator import statFuncListGenerator
 
 class UAV_Scene_Base(Scene_Base):
     def __init__(self, agentsNum, agentsCls, agentsArgs, optimizerCls, optimizerArgs, targetCls, targetArgs, MAS_Cls,
-                 MAS_Args, needRunningTime, targetNum=1, deltaTime=1., figureSavePath = None):
+                 MAS_Args, needRunningTime, targetNum=1, deltaTime=1., figureSavePath = None, statOutputRegisters=None):
         self.agentsNum = agentsNum
         self.targetNum = targetNum
         self.deltaTime = deltaTime
         self.figureSavePath = figureSavePath
+        self.__UAV_Scene_Base_stat_output_dict = {
+            "UAV_SCENE_BASE_UAV_TRAJECTORY_VISUALIZE":self.UAV_SCENE_BASE_UAVTrajectoryVisualize
+        }
+
+        if statOutputRegisters is None:
+            statOutputRegisters = ["UAV_SCENE_BASE_UAV_TRAJECTORY_VISUALIZE"]
+        self.statOutputFuncReg = statFuncListGenerator(statOutputRegisters, self.__UAV_Scene_Base_stat_output_dict)
 
         self._initAgents(agentsCls, agentsArgs, optimizerCls, optimizerArgs, deltaTime)
         self._initTargets(targetCls, targetArgs, deltaTime)
@@ -71,18 +78,8 @@ class UAV_Scene_Base(Scene_Base):
         self.multiAgentSystem = MAS_Cls(agents, MAS_Args)
 
     def runningFinal(self):
-        scattersList = [self.target.coordinateVector]
-        nameList = ["target"]
-        for i, item  in enumerate(self.agents):
-            scattersList.append(item.coordinateVector)
-            nameList.append(r"uav %d" % i)
-
-        cd = CoorDiagram()
-        if self.figureSavePath is None:
-            cd.drawManyScattersInOnePlane(scattersList, nameList=nameList)
-        else:
-            cd.setStorePath(self.figureSavePath)
-            cd.drawManyScattersInOnePlane(scattersList, nameList=nameList, ifSaveFig=True)
+        for item in self.statOutputFuncReg:
+            item()
 
     def runningInner(self):
         if self.targetNum == 1:
@@ -99,4 +96,30 @@ class UAV_Scene_Base(Scene_Base):
             for item in self.targets:
                 item.update()
 
+    '''
+    following is stat data function output or visualize function
+    '''
+    def UAV_SCENE_BASE_SimpleVisualizeTrajectory(self, scattersList, nameList, titleName = None):
+        cd = CoorDiagram()
+        if self.figureSavePath is None:
+            cd.drawManyScattersInOnePlane(scattersList, nameList=nameList, titleName=titleName)
+        else:
+            cd.setStorePath(self.figureSavePath)
+            cd.drawManyScattersInOnePlane(scattersList, nameList=nameList, titleName=titleName, ifSaveFig=True)
 
+    def UAV_SCENE_BASE_UAVTrajectoryVisualize(self):
+        scattersList = []
+        nameList = []
+        if self.targetNum == 1:
+            scattersList.append(self.target.coordinateVector)
+            nameList.append("target")
+        else:
+            for i, item in enumerate(self.targets):
+                scattersList.append(item.coordinateVector)
+                nameList.append(r"target %d" % i)
+
+        for i, item  in enumerate(self.agents):
+            scattersList.append(item.coordinateVector)
+            nameList.append(r"uav %d" % i)
+
+        self.UAV_SCENE_BASE_SimpleVisualizeTrajectory(scattersList, nameList, titleName="uav trajectory")

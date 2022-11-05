@@ -3,7 +3,7 @@
 
 """
 @Project : UAV_Traking
-@File    : UAV_MultiTargets_MAS_Base.py
+@File    : UAV_MultiTarget_MAS_Base.py
 @Author  : jay.zhu
 @Time    : 2022/11/3 21:02
 """
@@ -13,8 +13,8 @@ from algorithmTool.filterTool.ExtendedKalmanFilter import ExtendedKalmanFilter
 from EC.EC_Common import ArgsDictValueController
 
 
-class UAV_MultiTargets_MAS_Base(UAV_MAS_Base):
-    __UAV_MULTITARGETS_MAS_BASE_DEFAULT_ARGS = {
+class UAV_MultiTarget_MAS_Base(UAV_MAS_Base):
+    __UAV_MULTI_TARGET_MAS_BASE_DEFAULT_ARGS = {
         "linearVelocityConsumeFactor": 1.,
         "angularVelocityConsumeFactor": 1.
     }
@@ -29,7 +29,7 @@ class UAV_MultiTargets_MAS_Base(UAV_MAS_Base):
 
         self.nowRunningGen = 0
         self.UAV_MultiTargets_MAS_Base_Args = ArgsDictValueController(masArgs,
-                                                                      self.__UAV_MULTITARGETS_MAS_BASE_DEFAULT_ARGS,
+                                                                      self.__UAV_MULTI_TARGET_MAS_BASE_DEFAULT_ARGS,
                                                                       onlyUseDefaultKey=True)
 
     def updateAgentState(self):

@@ -3,7 +3,7 @@
 
 """
 @Project : UAV_Traking
-@File    : UAV_MultiTargets_Agent.py
+@File    : UAV_MultiTarget_Agent.py
 @Author  : jay.zhu
 @Time    : 2022/11/4 20:03
 """
@@ -12,8 +12,8 @@ import numpy as np
 from MAS.Agents.UAV_Agent.UAV_Common import calcMovingForUAV, calcDistance
 from MAS.Agents.UAV_Agent.UAV_Agent import UAV_Agent
 
-class UAV_MultiTargets_Agent(UAV_Agent):
-    __UAV_MULTITARGETS_AGENT_DEFAULT_ARGS = {
+class UAV_MultiTarget_Agent(UAV_Agent):
+    __UAV_MULTI_TARGET_AGENT_DEFAULT_ARGS = {
         "JBalanceFactor": .9,
     }
 
@@ -45,7 +45,7 @@ class UAV_MultiTargets_Agent(UAV_Agent):
 
         # 如果已经有了JBalanceFactor，由于只添加不存在的，所以使用用户输入的
         # 如果没有，就使用默认的
-        self.agentArgs.update(newDict=self.__UAV_MULTITARGETS_AGENT_DEFAULT_ARGS, onlyAddNotExists=True)
+        self.agentArgs.update(newDict=self.__UAV_MULTI_TARGET_AGENT_DEFAULT_ARGS, onlyAddNotExists=True)
 
     def recvMeg(self, **kwargs):
         self.agentCrowd = kwargs["agentCrowd"]
