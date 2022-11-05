@@ -7,6 +7,7 @@
 @Author  : jay.zhu
 @Time    : 2022/10/14 14:35
 """
+import time
 from Scene.Scene_Base import Scene_Base
 from Jay_Tool.visualizeTool.CoorDiagram import CoorDiagram
 from dataStatistics.statFuncListGenerator import statFuncListGenerator
@@ -64,13 +65,13 @@ class UAV_Scene_Base(Scene_Base):
             if isinstance(targetArgs, list) is False:
                 self.targets = [targetCls(initPositionState=targetArgs["initPositionState"],
                                           linearVelocityRange=targetArgs["linearVelocityRange"],
-                                          angularVelocity=targetArgs["angularVelocityRange"],
+                                          angularVelocityRange=targetArgs["angularVelocityRange"],
                                           movingFuncRegister=targetArgs["movingFuncRegister"],
                                           deltaTime=deltaTime) for i in range(self.targetNum)]
             else:
                 self.targets = [targetCls(initPositionState=targetArgs[i]["initPositionState"],
                                          linearVelocityRange=targetArgs[i]["linearVelocityRange"],
-                                         angularVelocity=targetArgs[i]["angularVelocityRange"],
+                                         angularVelocityRange=targetArgs[i]["angularVelocityRange"],
                                          movingFuncRegister=targetArgs[i]["movingFuncRegister"],
                                          deltaTime=deltaTime) for i in range(self.targetNum)]
 
@@ -79,6 +80,7 @@ class UAV_Scene_Base(Scene_Base):
 
     def runningFinal(self):
         for item in self.statOutputFuncReg:
+            time.sleep(0.5)
             item()
 
     def runningInner(self):

@@ -23,7 +23,7 @@ class UAV_MultiTarget_Agent(UAV_Agent):
         super().__init__(initPositionState, linearVelocityRange, angularVelocityRange, optimizerCls, agentArgs,
                          optimizerInitArgs, optimizerComputationArgs, deltaTime, height)
 
-        optimizerInitArgs["maxConstraint"].insert(0, float(targetNum + 1))
+        optimizerInitArgs["maxConstraint"].insert(0, float(targetNum) - 0.05)
         optimizerInitArgs["minConstraint"].insert(0, float(0.))
         optimizerInitArgs["optimizerLearningDimNum"] += 1
 
@@ -42,10 +42,13 @@ class UAV_MultiTarget_Agent(UAV_Agent):
         self.predictorCls = predictorCls
         self.predictorComputationArgs = predictorComputationArgs
         self.trackingTargetIndex = 0
+        self.testTrackingTargetIndex = 0
 
         # 如果已经有了JBalanceFactor，由于只添加不存在的，所以使用用户输入的
         # 如果没有，就使用默认的
         self.agentArgs.update(newDict=self.__UAV_MULTI_TARGET_AGENT_DEFAULT_ARGS, onlyAddNotExists=True)
+
+        self.runningGen = 0
 
     def recvMeg(self, **kwargs):
         self.agentCrowd = kwargs["agentCrowd"]
@@ -57,8 +60,11 @@ class UAV_MultiTarget_Agent(UAV_Agent):
                 calcDistance(self.positionState, self.targetPositionList[self.trackingTargetIndex][0]) *
                 self.optimizer.ECArgsDictValueController["fittingMinDenominator"])
 
+    def optimization(self):
+        super().optimization()
+        self.runningGen += 1
     def moving(self):
-        self.trackingTargetNum = int(self.predictVelocityList[0])
+        self.trackingTargetIndex = int(self.predictVelocityList[0])
         startIndex, endIndex = self.getVelocityFromPredictVelocityList(
             self.agentArgs["usePredictVelocityLen"] - self.remainMoving)
         self.positionState = calcMovingForUAV(self.positionState, self.predictVelocityList[startIndex: endIndex],
@@ -72,27 +78,32 @@ class UAV_MultiTarget_Agent(UAV_Agent):
         #        self.agentArgs["JConFactor"] * self.evalVars_JConsume(chromosome,self.predictVelocityLen) + \
         #        self.agentArgs["JColFactor"] * self.evalVars_JCollision(chromosome, self.predictVelocityLen) + \
         #        self.agentArgs["JComFactor"] * self.evalVars_JCommunication(chromosome, self.predictVelocityLen)
-        return self.agentArgs["JTaskFactor"] * self.evalVars_JTask(chromosome,
-                                                                   self.predictVelocityLen) + \
-               self.agentArgs["JConFactor"] * self.evalVars_JConsume(chromosome, self.predictVelocityLen) + \
-               self.agentArgs["JBalanceFactor"] * self.evalVars_JBalance(chromosome, self.predictVelocityLen)
+        return  self.agentArgs["JBalanceFactor"] * self.evalVars_JBalance(chromosome, self.predictVelocityLen) +\
+                self.agentArgs["JTaskFactor"] * self.evalVars_JTask(chromosome,self.predictVelocityLen) + \
+                self.agentArgs["JConFactor"] * self.evalVars_JConsume(chromosome, self.predictVelocityLen)
+
 
     def getVelocityFromPredictVelocityList(self, velocityIndex):
         velocityLen = self.velocity.size
         return int((velocityIndex) * velocityLen) + 1, int((velocityIndex + 1) * velocityLen) + 1
 
     def evalVars_JBalance(self, chromosome, *args):
-        self.trackingTargetNum = int(chromosome[0])
-        numOfTrackingUAVForTargetList = np.array(self.numOfTrackingUAVForTargetList)
-        numOfTrackingUAVForTargetList[self.trackingTargetNum] += 1.
-        return np.var(numOfTrackingUAVForTargetList)
+        self.testTrackingTargetIndex = int(chromosome[0])
+        if self.runningGen > 5:
+            numOfTrackingUAVForTargetList = np.array(self.numOfTrackingUAVForTargetList)
+            numOfTrackingUAVForTargetList[self.testTrackingTargetIndex] += 1.
+            if numOfTrackingUAVForTargetList[self.trackingTargetIndex] >= 1.:
+                numOfTrackingUAVForTargetList[self.trackingTargetIndex] -= 1.
+            return np.var(numOfTrackingUAVForTargetList)
+        else:
+            return 0.
 
     def evalVars_JTask(self, chromosome, *args):
         predictVelocityLen = args[0]
         JTaskList = np.zeros(predictVelocityLen)
         oldPositionList = [self.positionState]
         originDisFromTarget = 0.
-        trackingTargetPosition = self.targetPositionList[self.trackingTargetNum]
+        trackingTargetPosition = self.targetPositionList[self.testTrackingTargetIndex]
 
         for i in range(predictVelocityLen):
             startIndex, endIndex = self.getVelocityFromPredictVelocityList(i)

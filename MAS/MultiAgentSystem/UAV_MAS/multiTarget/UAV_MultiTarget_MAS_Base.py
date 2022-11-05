@@ -20,6 +20,9 @@ class UAV_MultiTarget_MAS_Base(UAV_MAS_Base):
     }
 
     def __init__(self, agents, masArgs, targetNum, terminalHandler=None, statRegisters=None, deltaTime=1.):
+        if statRegisters is None:
+            statRegisters = [self.UAV_MultiTargets_MAS_Stat_numOfTrackingUAVForTarget,
+                             self.UAV_MultiTargets_MAS_Stat_ConsumeOfEachUAV]
         super().__init__(agents, masArgs, terminalHandler, statRegisters)
         self.targetNum = targetNum
         self.deltaTime = deltaTime
@@ -35,6 +38,10 @@ class UAV_MultiTarget_MAS_Base(UAV_MAS_Base):
     def updateAgentState(self):
         super().updateAgentState()
         self.updateNumOfTrackingUAVForTargets()
+
+    def update(self):
+        super().update()
+        self.nowRunningGen += 1
 
     def updateNumOfTrackingUAVForTargets(self):
         for index in range(self.numOfTrackingUAVForTargetList.size):
@@ -88,7 +95,7 @@ class UAV_MultiTarget_MAS_Base(UAV_MAS_Base):
         else:
             for index, item in enumerate(self.numOfTrackingUAVForTargetList):
                 self.numOfTrackingUAVForTargetStat[index].append(
-                    np.array([float(self.nowRunningGen), item.trackingTargetIndex]))
+                    np.array([float(self.nowRunningGen), item]))
 
     """
     @brief: record consume of each uav.
@@ -97,10 +104,10 @@ class UAV_MultiTarget_MAS_Base(UAV_MAS_Base):
     def UAV_MultiTargets_MAS_Stat_ConsumeOfEachUAV(self, **kwargs):
         def calcAgentConsume(agent):
             remainMoving = agent.remainMoving + 1
-            startIndex, _ = agent.getVelocityFromPredictVelocityList(remainMoving)
-            itemConsume = (agent.chromosome[startIndex] * self.UAV_MultiTargets_MAS_Base_Args[
+            startIndex, _ = agent.getVelocityFromPredictVelocityList(agent.agentArgs["usePredictVelocityLen"] - remainMoving)
+            itemConsume = (agent.predictVelocityList[startIndex] * self.UAV_MultiTargets_MAS_Base_Args[
                 "linearVelocityConsumeFactor"] +
-                           agent.chromosome[startIndex + 1] * self.UAV_MultiTargets_MAS_Base_Args[
+                           agent.predictVelocityList[startIndex + 1] * self.UAV_MultiTargets_MAS_Base_Args[
                                "angularVelocityConsumeFactor"]) \
                           * self.deltaTime
             return itemConsume

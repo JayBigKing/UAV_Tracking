@@ -7,7 +7,6 @@
 @Author  : jay.zhu
 @Time    : 2022/11/5 14:06
 """
-from Jay_Tool.visualizeTool.CoorDiagram import CoorDiagram
 from Scene.UAV_Scene.UAV_Scene_Base import UAV_Scene_Base
 
 
@@ -52,13 +51,13 @@ class UAV_MultiTarget_Scene_Base(UAV_Scene_Base):
         else:
             self.targets = [targetCls(initPositionState=targetArgs[i]["initPositionState"],
                                       linearVelocityRange=targetArgs[i]["linearVelocityRange"],
-                                      angularVelocity=targetArgs[i]["angularVelocityRange"],
+                                      angularVelocityRange=targetArgs[i]["angularVelocityRange"],
                                       movingFuncRegister=targetArgs[i]["movingFuncRegister"],
                                       deltaTime=deltaTime) for i in range(self.targetNum)]
 
     def _initMAS(self, MAS_Cls, agents, MAS_Args, deltaTime):
         self.multiAgentSystem = MAS_Cls(agents=agents,
-                                        MAS_Args=MAS_Args,
+                                        masArgs=MAS_Args,
                                         targetNum=self.targetNum,
                                         deltaTime=deltaTime)
 

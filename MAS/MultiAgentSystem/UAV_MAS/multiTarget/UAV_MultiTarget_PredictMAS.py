@@ -24,7 +24,11 @@ class UAV_MultiTarget_PredictMAS(UAV_MultiTarget_MAS_Base):
         "kalman_R": (np.diag([1.0, 1.0]) ** 2)
     }
     def __init__(self, agents, masArgs, targetNum, terminalHandler=None, predictorCls=None, deltaTime=1.):
-        super().__init__(agents, masArgs, targetNum, terminalHandler, deltaTime)
+        super().__init__(agents=agents,
+                         masArgs=masArgs,
+                         targetNum=targetNum,
+                         terminalHandler=terminalHandler,
+                         deltaTime=deltaTime)
         self.predictMas_Args = ArgsDictValueController(masArgs, self.__UAV_MULTI_TARGET_PREDICT_MAS_DEFAULT_ARGS)
 
         if predictorCls is None:
@@ -47,28 +51,28 @@ class UAV_MultiTarget_PredictMAS(UAV_MultiTarget_MAS_Base):
         # self.targerVelocity = kwargs["targetVelocity"]
         # self.trajectoryPredictor.predict(self.targetPosition[0:2], self.targerVelocity)
         if self.firstPredict is True:
-            for trajectoryPredictor in self.trajectoryPredictorList:
-                trajectoryPredictor.xEst = np.array([[kwargs["targetPosition"][0]],
-                                                     [kwargs["targetPosition"][1]],
-                                                     [kwargs["targetPosition"][2]],
-                                                     [kwargs["targetVelocity"][0]], ])
+            for index, trajectoryPredictor in enumerate(self.trajectoryPredictorList):
+                trajectoryPredictor.xEst = np.array([[kwargs["targetPosition"][index][0]],
+                                                     [kwargs["targetPosition"][index][1]],
+                                                     [kwargs["targetPosition"][index][2]],
+                                                     [kwargs["targetVelocity"][index][0]], ])
             self.firstPredict = False
         if self.waitingInitPredictorCount < self.predictMas_Args["waitingInitPredictorTime"]:
-            for trajectoryPredictor in self.trajectoryPredictorList:
-                trajectoryPredictor.predict(np.vstack(kwargs["targetPosition"][0:2]),
-                                            np.vstack(kwargs["targetVelocity"]))
+            for index,trajectoryPredictor in enumerate(self.trajectoryPredictorList):
+                trajectoryPredictor.predict(np.vstack(kwargs["targetPosition"][index][0:2]),
+                                            np.vstack(kwargs["targetVelocity"][[index]]))
         else:
             for index, trajectoryPredictor in enumerate(self.trajectoryPredictorList):
                 if self.agents[0].remainMoving == 0:
                     self.uavMovingTime = self.predictMas_Args["usePredictVelocityLen"]
-                    xEstList, _ = trajectoryPredictor.multiPredict(np.vstack(kwargs["targetPosition"][0:2]),
-                                                                   np.vstack(kwargs["targetVelocity"]),
+                    xEstList, _ = trajectoryPredictor.multiPredict(np.vstack(kwargs["targetPosition"][index][0:2]),
+                                                                   np.vstack(kwargs["targetVelocity"][index]),
                                                                    self.predictMas_Args["predictVelocityLen"])
                     self.targetPositionList[index] = np.array(
                         [xEstList[i][0:2, :] for i in range(self.predictMas_Args["predictVelocityLen"])])
                 else:
-                    trajectoryPredictor.predict(np.vstack(kwargs["targetPosition"][0:2]),
-                                                np.vstack(kwargs["targetVelocity"]))
+                    trajectoryPredictor.predict(np.vstack(kwargs["targetPosition"][index][0:2]),
+                                                np.vstack(kwargs["targetVelocity"][index]))
 
     def update(self):
         if self.waitingInitPredictorCount < self.predictMas_Args["waitingInitPredictorTime"]:
