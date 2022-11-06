@@ -15,6 +15,7 @@ from MAS.Agents.UAV_Agent.multiTarget.UAV_MultiTargets_Agent import UAV_MultiTar
 from EC.dynamicOpt.EC_DynamicOpt_InitAndHyperMutation import EC_DynamicOpt_InitAndHyperMutation
 from MAS.MultiAgentSystem.UAV_MAS.multiTarget.UAV_MultiTarget_PredictMAS import UAV_MultiTarget_PredictMAS
 from MAS.MultiAgentSystem.UAV_MAS.multiTarget.UAV_MultiTarget_PredictAndNashMAS import UAV_MultiTarget_PredictAndNashMAS
+from MAS.MultiAgentSystem.UAV_MAS.multiTarget.UAV_MultiTarget_PredictAndSerialMAS import UAV_MultiTarget_PredictAndSerialMAS
 
 
 def experimentBase():
@@ -23,7 +24,7 @@ def experimentBase():
     AGENT_CLS = UAV_MultiTarget_Agent
     OPTIMIZER_CLS = EC_DynamicOpt_InitAndHyperMutation
     TARGET_CLS = UAV_TargetAgent.UAV_TargetAgent
-    MAS_CLS = UAV_MultiTarget_PredictAndNashMAS
+    MAS_CLS = UAV_MultiTarget_PredictAndSerialMAS
 
     DELTA_TIME = .5
     AGENT_INIT_POSITION_RANGE = [[10., 20.], [10., 30.]]
@@ -74,19 +75,19 @@ def experimentBase():
         "optimizerComputationArgs":EC_COMPUTATION_ARGS
     }
 
-    TARGET_INIT_POSITION_RANGE = [[10., 80.], [10., 80.]]
+    TARGET_INIT_POSITION_RANGE = [[10., 100.], [10., 100.]]
     TARGET_ARGS_LIST = [{
         "initPositionState": [random.uniform(TARGET_INIT_POSITION_RANGE[0][0], TARGET_INIT_POSITION_RANGE[0][1]),
                               random.uniform(TARGET_INIT_POSITION_RANGE[1][0], TARGET_INIT_POSITION_RANGE[1][1]),
                               0],
         "linearVelocityRange": [0., 10.],
         "angularVelocityRange": [-30., 30.],
-        "movingFuncRegister":"movingStraightly",
+        "movingFuncRegister":"randMoving",
         "deltaTime": DELTA_TIME,
     }   for i in range(AGENTS_NUM)]
 
     MAS_ARGS = {
-        "optimizationNeedTimes": 11,
+        "optimizationNeedTimes": 1,
         "allCountDiffNashBalanceValue": 5e-1,
         "oneDiffNashBalanceValue": 1e-4,
         "predictVelocityLen": PREDICT_VELOCITY_LEN,
@@ -94,7 +95,7 @@ def experimentBase():
         "waitingInitPredictorTime":0,
     }
 
-    NEED_RUNNING_TIME = 10
+    NEED_RUNNING_TIME = 100
 
 
     uav_scene_base = UAV_MultiTarget_PredictScene(agentsNum=AGENTS_NUM,
