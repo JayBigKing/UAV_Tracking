@@ -48,8 +48,6 @@ class UAV_MultiTarget_Agent(UAV_Agent):
         # 如果没有，就使用默认的
         self.agentArgs.update(newDict=self.__UAV_MULTI_TARGET_AGENT_DEFAULT_ARGS, onlyAddNotExists=True)
 
-        self.runningGen = 0
-
     def recvMeg(self, **kwargs):
         self.agentCrowd = kwargs["agentCrowd"]
         self.selfIndex = kwargs["selfIndex"]
@@ -60,9 +58,9 @@ class UAV_MultiTarget_Agent(UAV_Agent):
                 calcDistance(self.positionState, self.targetPositionList[self.trackingTargetIndex][0]) *
                 self.optimizer.ECArgsDictValueController["fittingMinDenominator"])
 
-    def optimization(self):
-        super().optimization()
-        self.runningGen += 1
+    # def optimization(self):
+    #     super().optimization()
+
     def moving(self):
         self.trackingTargetIndex = int(self.predictVelocityList[0])
         startIndex, endIndex = self.getVelocityFromPredictVelocityList(
@@ -88,15 +86,17 @@ class UAV_MultiTarget_Agent(UAV_Agent):
         return int((velocityIndex) * velocityLen) + 1, int((velocityIndex + 1) * velocityLen) + 1
 
     def evalVars_JBalance(self, chromosome, *args):
+        if hasattr(self, "maxTrackingTargetIndexVar") is False:
+            maxTrackingTargetIndexVarList = np.zeros(self.numOfTrackingUAVForTargetList.size)
+            maxTrackingTargetIndexVarList[0] = len(self.agentCrowd)
+            self.maxTrackingTargetIndexVar = np.var(maxTrackingTargetIndexVarList)
+
         self.testTrackingTargetIndex = int(chromosome[0])
-        if self.runningGen > 5:
-            numOfTrackingUAVForTargetList = np.array(self.numOfTrackingUAVForTargetList)
-            numOfTrackingUAVForTargetList[self.testTrackingTargetIndex] += 1.
-            if numOfTrackingUAVForTargetList[self.trackingTargetIndex] >= 1.:
-                numOfTrackingUAVForTargetList[self.trackingTargetIndex] -= 1.
-            return np.var(numOfTrackingUAVForTargetList)
-        else:
-            return 0.
+        numOfTrackingUAVForTargetList = np.array(self.numOfTrackingUAVForTargetList)
+        numOfTrackingUAVForTargetList[self.testTrackingTargetIndex] += 1.
+        if numOfTrackingUAVForTargetList[self.trackingTargetIndex] >= 1.:
+            numOfTrackingUAVForTargetList[self.trackingTargetIndex] -= 1.
+        return np.var(numOfTrackingUAVForTargetList) / self.maxTrackingTargetIndexVar
 
     def evalVars_JTask(self, chromosome, *args):
         predictVelocityLen = args[0]

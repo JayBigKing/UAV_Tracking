@@ -12,6 +12,7 @@ from Jay_Tool.EfficiencyTestTool.EfficiencyTestTool import clockTester
 from Scene.UAV_Scene.multiTarget.UAV_MultiTarget_PredictScene import UAV_MultiTarget_PredictScene
 from MAS.Agents.UAV_Agent import UAV_TargetAgent
 from MAS.Agents.UAV_Agent.multiTarget.UAV_MultiTargets_Agent import UAV_MultiTarget_Agent
+from MAS.Agents.UAV_Agent.multiTarget.UAV_MultiTargets_ProbabilitySelectTargetAgent import UAV_MultiTargets_ProbabilitySelectTargetAgent
 from EC.dynamicOpt.EC_DynamicOpt_InitAndHyperMutation import EC_DynamicOpt_InitAndHyperMutation
 from MAS.MultiAgentSystem.UAV_MAS.multiTarget.UAV_MultiTarget_PredictMAS import UAV_MultiTarget_PredictMAS
 from MAS.MultiAgentSystem.UAV_MAS.multiTarget.UAV_MultiTarget_PredictAndNashMAS import UAV_MultiTarget_PredictAndNashMAS
@@ -19,12 +20,12 @@ from MAS.MultiAgentSystem.UAV_MAS.multiTarget.UAV_MultiTarget_PredictAndSerialMA
 
 
 def experimentBase():
-    AGENTS_NUM = 4
+    AGENTS_NUM = 7
     TARGET_NUM = 2
-    AGENT_CLS = UAV_MultiTarget_Agent
+    AGENT_CLS = UAV_MultiTargets_ProbabilitySelectTargetAgent
     OPTIMIZER_CLS = EC_DynamicOpt_InitAndHyperMutation
     TARGET_CLS = UAV_TargetAgent.UAV_TargetAgent
-    MAS_CLS = UAV_MultiTarget_PredictAndSerialMAS
+    MAS_CLS = UAV_MultiTarget_PredictMAS
 
     DELTA_TIME = .5
     AGENT_INIT_POSITION_RANGE = [[10., 20.], [10., 30.]]
@@ -110,7 +111,7 @@ def experimentBase():
                                     needRunningTime=NEED_RUNNING_TIME,
                                     targetNum=TARGET_NUM,
                                     deltaTime=DELTA_TIME,
-                                    figureSavePath="../../experimentRes/experimentPredictMultiTarget/"
+                                    figureSavePath="../../experimentRes/experimentPredictMultiTarget/2022.11.9"
                                     )
 
     return uav_scene_base
