@@ -13,6 +13,7 @@ class Agent_Base(ABC):
     def __init__(self, optimizer = None):
         self.optimizer = optimizer
         self.optimizationResult = None
+        self.firstRun = True
 
     def sendMeg(self):
         pass
@@ -21,6 +22,7 @@ class Agent_Base(ABC):
         pass
 
     def optimization(self):
+        self.firstRun = False
         self.optimizationResult = self.optimizer.optimize()
 
     @abstractmethod

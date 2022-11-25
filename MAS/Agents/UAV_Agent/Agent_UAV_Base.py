@@ -13,16 +13,17 @@ from MAS.Agents.UAV_Agent.UAV_Common import calcMovingForUAV
 
 
 class Agent_UAV_Base(Agent_WithStat_Base):
-    def __init__(self, initPositionState, linearVelocityRange, angularVelocity, optimizer=None, deltaTime=1.):
+    def __init__(self, initPositionState, linearVelocityRange, angularVelocityRange, maxVariationOfLinearSpeed = 2., optimizer=None, deltaTime=1.):
         super().__init__(optimizer=optimizer, statRegisters=[self.coordinateRecord])
         self.positionState = np.array(initPositionState)  # 0:x轴，1:y轴，2:航向角
         self.linearVelocityRange = np.array(linearVelocityRange)
-        self.angularVelocity = np.array(angularVelocity)
+        self.linearSpeedChangeRange = np.array([-abs(maxVariationOfLinearSpeed), abs(maxVariationOfLinearSpeed)])
+        self.angularVelocityRange = np.array(angularVelocityRange)
         if self.linearVelocityRange[0] > self.linearVelocityRange[1]:
             self.linearVelocityRange[0], self.linearVelocityRange[1] = self.linearVelocityRange[1], \
                                                                        self.linearVelocityRange[0]
-        if self.angularVelocity[0] > self.angularVelocity[1]:
-            self.angularVelocity[0], self.angularVelocity[1] = self.angularVelocity[1], self.angularVelocity[0]
+        if self.angularVelocityRange[0] > self.angularVelocityRange[1]:
+            self.angularVelocityRange[0], self.angularVelocityRange[1] = self.angularVelocityRange[1], self.angularVelocityRange[0]
 
         self.velocity = np.zeros(2)  # 索引1是线速度，索引2是角速度
         self.deltaTime = deltaTime

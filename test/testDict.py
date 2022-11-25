@@ -25,8 +25,15 @@ def test3():
     print(len(d0))
     print(isinstance(d0,list))
 
+def test4():
+    d0 = {"h": 1, "u": 2, "t": 10, "o": 3}
+    d1 = {"h": 2, "o":5, "uu":100}
+    print(d0)
+    d0.update(d1)
+    print(d0)
+
 def main():
-    test3()
+    test4()
 
 if __name__ == "__main__":
     main()

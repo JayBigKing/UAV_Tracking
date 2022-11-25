@@ -94,6 +94,23 @@ def test12():
     for i in range(20000):
         a = n0.size
 
+@clockTester
+def test13():
+    a0 = np.array([1., 2., 3. ])
+    print(a0)
+    for item in a0:
+        item = 0.
+    print(a0)
+
+def test14():
+    a0 = np.array([1., 2., 3.])
+    a1 = np.array([1., 1., 1.])
+    print(np.var(a0))
+    print(np.var(a1))
+
+def test15():
+    print(int(np.around(0.9, 0)))
+
 def main():
     # test1()
     # test2()
@@ -105,8 +122,11 @@ def main():
     # test8()
     # test9()
     # test10()
-    test12()
-    test11()
+    # test12()
+    # test11()
+    # test13()
+    # test14()
+    test15()
 
 
 if __name__ == "__main__":

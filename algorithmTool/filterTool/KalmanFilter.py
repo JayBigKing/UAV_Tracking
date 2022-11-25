@@ -187,31 +187,46 @@ class KalmanFilter2(object):
         return self.X[0,0],self.X[1,0]
 
     def multiProcess(self,n, x,y,time_stamp = -1., deltaTime = -1.):
-        firstStateFlag = False
-        if n == 1:
-            return self.process(x, y, deltaTime=deltaTime)
         Xlist = np.zeros((n,2))
-        if self.state==0:
-            self.set_state(x,y,time_stamp)
-            self.state=1
-            firstStateFlag = True
-            Xlist[0,0], Xlist[0,1] = x, y
-        else:
-            Xlist[0,0], Xlist[0,1] = self.process(x,y,deltaTime=deltaTime)
-        if firstStateFlag is False:
+        Xlist[0, 0], Xlist[0, 1] = self.process(x, y, deltaTime=deltaTime)
+        if n > 1:
             originZ = deepcopy(self.Z)
-        originF = deepcopy(self.F)
-        originX = deepcopy(self.X)
-        originP = deepcopy(self.P)
-        for i in range(1, n):
-            Xlist[i, 0], Xlist[i, 1] = self.process(Xlist[i - 1, 0], Xlist[i - 1, 1], deltaTime=deltaTime)
-        if firstStateFlag is False:
+            originF = deepcopy(self.F)
+            originX = deepcopy(self.X)
+            originP = deepcopy(self.P)
+            for i in range(1, n):
+                Xlist[i, 0], Xlist[i, 1] = self.process(Xlist[i - 1, 0], Xlist[i - 1, 1], deltaTime=deltaTime)
             self.Z = originZ
-        self.F = originF
-        self.X = originX
-        self.P = originP
-
+            self.F = originF
+            self.X = originX
+            self.P = originP
         return Xlist
+
+        # firstStateFlag = False
+        # if n == 1:
+        #     return self.process(x, y, deltaTime=deltaTime)
+        # Xlist = np.zeros((n,2))
+        # if self.state==0:
+        #     self.set_state(x,y,time_stamp)
+        #     self.state=1
+        #     firstStateFlag = True
+        #     Xlist[0,0], Xlist[0,1] = x, y
+        # else:
+        #     Xlist[0,0], Xlist[0,1] = self.process(x,y,deltaTime=deltaTime)
+        # if firstStateFlag is False:
+        #     originZ = deepcopy(self.Z)
+        # originF = deepcopy(self.F)
+        # originX = deepcopy(self.X)
+        # originP = deepcopy(self.P)
+        # for i in range(1, n):
+        #     Xlist[i, 0], Xlist[i, 1] = self.process(Xlist[i - 1, 0], Xlist[i - 1, 1], deltaTime=deltaTime)
+        # if firstStateFlag is False:
+        #     self.Z = originZ
+        # self.F = originF
+        # self.X = originX
+        # self.P = originP
+        #
+        # return Xlist
 
 
 

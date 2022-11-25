@@ -12,14 +12,14 @@ from Jay_Tool.visualizeTool.CoorDiagram import  CoorDiagram
 from MAS.Agents.UAV_Agent.UAV_TargetAgent import UAV_TargetAgent
 
 def test1():
-    target0 = UAV_TargetAgent([0., 0., 0.], [0., 0.], [0., 0.], )
-    for i in range(10):
+    target0 = UAV_TargetAgent([0., 0., 0.], [0., 10.], [0., 20.], movingFuncRegister="randMoving", deltaTime=.1 )
+    for i in range(400):
         # target0.optimization()
         target0.update()
 
     cd = CoorDiagram()
     scattersList = [target0.coordinateVector]
-    cd.drwaManyScattersInOnePlane(scattersList)
+    cd.drawManyScattersInOnePlane(scattersList, ifSaveFig=True, nameList=["hhh"])
 
 def main():
     test1()

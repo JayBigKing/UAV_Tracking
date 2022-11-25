@@ -33,9 +33,29 @@ def test2():
     a = t1.x
     print(hasattr(TestShareFunc, 'hh'))
 
+def test3():
+    from copy import deepcopy
+    class TestCopy:
+        def __init__(self):
+            self.hh = 0
+        def toDel(self):
+            del self.hh
+
+    t1 = TestCopy()
+    t1.hh = 100.
+    t2 = deepcopy(t1)
+    print(t2.hh)
+    t2.hh = 190
+    print(t1.hh)
+    print(t2.hh)
+    # t1.toDel()
+    # print(t1.hh)
+    TestCopyPointer = TestCopy
+    print(TestCopyPointer.__name__)
+
 
 def main():
-    test2()
+    test3()
 
 if __name__ == '__main__':
     main()

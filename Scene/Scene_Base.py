@@ -7,6 +7,7 @@
 @Author  : jay.zhu
 @Time    : 2022/10/14 14:29
 """
+from Jay_Tool.LogTool import myLogger
 
 
 class Scene_Base:
@@ -36,7 +37,7 @@ class Scene_Base:
         self.runningPreProcess()
         while self.shouldContinue():
             self.runningInner()
-            print('running epoch : %d / %d' % (self.nowRunningTime, self.needRunningTimes))
+            myLogger.myLogger_Logger().info('running epoch : %d / %d' % (self.nowRunningTime, self.needRunningTimes))
         self.runningFinal()
 
 

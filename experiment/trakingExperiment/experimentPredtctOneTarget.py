@@ -2,34 +2,37 @@
 # -*- coding: utf-8 -*-
 
 """
-@Project : uav tracking
-@File    : experiment2.py
+@Project : UAV_Traking
+@File    : experimentPredtctOneTarget.py
 @Author  : jay.zhu
-@Time    : 2022/10/14 15:24
+@Time    : 2022/10/28 18:09
 """
 import random
 from Jay_Tool.EfficiencyTestTool.EfficiencyTestTool import clockTester
-from Scene.UAV_Scene.UAV_Scene_Base import UAV_Scene_Base
+from Scene.UAV_Scene.UAV_PredictTargetScene import UAV_PredictTargetScene
 from MAS.Agents.UAV_Agent import UAV_Agent, UAV_TargetAgent
 from EC.dynamicOpt.EC_DynamicOpt_HyperMutation import EC_DynamicOpt_HyperMutation
-from MAS.MultiAgentSystem.UAV_MAS import UAV_NashMAS
+from EC.dynamicOpt.EC_DynamicOpt_InitAndHyperMutation import EC_DynamicOpt_InitAndHyperMutation
+from MAS.MultiAgentSystem.UAV_MAS import UAV_PredictMAS
 
 
 def experimentBase():
-    AGENTS_NUM = 3
+    AGENTS_NUM = 2
     AGENT_CLS = UAV_Agent.UAV_Agent
-    OPTIMIZER_CLS = EC_DynamicOpt_HyperMutation
+    OPTIMIZER_CLS = EC_DynamicOpt_InitAndHyperMutation
     TARGET_CLS = UAV_TargetAgent.UAV_TargetAgent
-    MAS_CLS = UAV_NashMAS.UAV_NashMAS
+    MAS_CLS = UAV_PredictMAS.UAV_PredictMAS
 
-    DELTA_TIME = 0.1
-    AGENT_INIT_POSITION_RANGE = [[10., 60.], [10., 60.]]
+    DELTA_TIME = .5
+    AGENT_INIT_POSITION_RANGE = [[10., 15.], [10., 15.]]
+    PREDICT_VELOCITY_LEN = 3
+    USE_PREDICT_VELOCITY_LEN = 1
     AGENT_SELF_INIT_ARGS = {
         "initPositionState": [random.uniform(AGENT_INIT_POSITION_RANGE[0][0], AGENT_INIT_POSITION_RANGE[0][1]),
                               random.uniform(AGENT_INIT_POSITION_RANGE[1][0], AGENT_INIT_POSITION_RANGE[1][1]),
                               0],
         "linearVelocityRange":[0., 15.],
-        "angularVelocity":[-200., 200.],
+        "angularVelocityRange":[-200., 200.],
         "deltaTime":DELTA_TIME,
     }
     AGENT_SELF_INIT_ARGS_LIST = [{
@@ -37,16 +40,16 @@ def experimentBase():
                               random.uniform(AGENT_INIT_POSITION_RANGE[1][0], AGENT_INIT_POSITION_RANGE[1][1]),
                               0],
         "linearVelocityRange":[0., 15.],
-        "angularVelocity":[-200., 200.],
+        "angularVelocityRange":[-200., 200.],
         "deltaTime":DELTA_TIME,
     }   for i in range(AGENTS_NUM)]
     AGENT_COMPUTATION_ARGS = {
-        "predictVelocityLen": 1,
-        "usePredictVelocityLen": 1,
+        "predictVelocityLen": PREDICT_VELOCITY_LEN,
+        "usePredictVelocityLen": USE_PREDICT_VELOCITY_LEN,
         "sameBestFittingCountThreshold": 10,
         "fittingIsSameThreshold": 1e-4,
-        "JTaskFactor": 1.,
-        "JConFactor": 1.,
+        "JTaskFactor": .9,
+        "JConFactor": .1,
         "JColFactor": 1.,
         "JComFactor": 1.,
     }
@@ -57,7 +60,7 @@ def experimentBase():
     EC_INIT_ARGS = {
         "n":50,
         "dimNum":2,
-        "needEpochTimes":50
+        "needEpochTimes":100
     }
     EC_COMPUTATION_ARGS = {
         "floatMutationOperateArg": 0.3,
@@ -81,20 +84,23 @@ def experimentBase():
                               random.uniform(TARGET_INIT_POSITION_RANGE[1][0], TARGET_INIT_POSITION_RANGE[1][1]),
                               0],
         "linearVelocityRange": [0., 10.],
-        "angularVelocity": [-30., 30.],
-        "movingFuncRegister":"randMoving",
+        "angularVelocityRange": [-30., 30.],
+        "movingFuncRegister":"movingAsSin",
         "deltaTime": DELTA_TIME,
     }
     MAS_ARGS = {
         "optimizationNeedTimes": 1,
         "allCountDiffNashBalanceValue": 5e-1,
-        "oneDiffNashBalanceValue": 1e-4
+        "oneDiffNashBalanceValue": 1e-4,
+        "predictVelocityLen": PREDICT_VELOCITY_LEN,
+        "usePredictVelocityLen": USE_PREDICT_VELOCITY_LEN,
+        "waitingInitPredictorTime":0,
     }
 
-    NEED_RUNNING_TIME = 300
+    NEED_RUNNING_TIME = 200
 
 
-    uav_scene_base = UAV_Scene_Base(agentsNum=AGENTS_NUM,
+    uav_scene_base = UAV_PredictTargetScene(agentsNum=AGENTS_NUM,
                                     agentsCls=AGENT_CLS,
                                     agentsArgs=AGENT_ARGS,
                                     optimizerCls=OPTIMIZER_CLS,
@@ -104,7 +110,8 @@ def experimentBase():
                                     MAS_Cls=MAS_CLS,
                                     MAS_Args=MAS_ARGS,
                                     needRunningTime=NEED_RUNNING_TIME,
-                                    deltaTime=DELTA_TIME)
+                                    deltaTime=DELTA_TIME,
+                                    figureSavePath="../experimentRes/experimentPredictOneTarget/")
 
     return uav_scene_base
 
