@@ -50,6 +50,7 @@ class UAV_MultiTarget_PredictMAS(UAV_MultiTarget_MAS_Base):
         # self.targetPosition = kwargs["targetPosition"]
         # self.targerVelocity = kwargs["targetVelocity"]
         # self.trajectoryPredictor.predict(self.targetPosition[0:2], self.targerVelocity)
+        super().recvFromEnv(targetPosition=kwargs["targetPosition"], targetVelocity=kwargs["targetVelocity"])
         if self.firstPredict is True:
             for index, trajectoryPredictor in enumerate(self.trajectoryPredictorList):
                 trajectoryPredictor.xEst = np.array([[kwargs["targetPosition"][index][0]],

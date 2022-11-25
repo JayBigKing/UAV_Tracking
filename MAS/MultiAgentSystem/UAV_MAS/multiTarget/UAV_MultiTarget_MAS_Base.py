@@ -11,6 +11,7 @@ import numpy as np
 from MAS.MultiAgentSystem.UAV_MAS.UAV_MAS_Base import UAV_MAS_Base
 from algorithmTool.filterTool.ExtendedKalmanFilter import ExtendedKalmanFilter
 from EC.EC_Common import ArgsDictValueController
+from MAS.Agents.UAV_Agent.UAV_Common import calcDistance
 
 
 class UAV_MultiTarget_MAS_Base(UAV_MAS_Base):
@@ -22,7 +23,9 @@ class UAV_MultiTarget_MAS_Base(UAV_MAS_Base):
     def __init__(self, agents, masArgs, targetNum, terminalHandler=None, statRegisters=None, deltaTime=1.):
         if statRegisters is None:
             statRegisters = [self.UAV_MultiTargets_MAS_Stat_numOfTrackingUAVForTarget,
-                             self.UAV_MultiTargets_MAS_Stat_ConsumeOfEachUAV]
+                             "recordDisOfUAVsForVisualize",
+                             "recordAlertDisOfUAVsForVisualize",
+                             self.UAV_MultiTargets_MAS_Stat_disBetweenTargetAndUAV]
         super().__init__(agents, masArgs, terminalHandler, statRegisters)
         self.targetNum = targetNum
         self.deltaTime = deltaTime
@@ -30,18 +33,14 @@ class UAV_MultiTarget_MAS_Base(UAV_MAS_Base):
         self.targetPositionList = None
         self.numOfTrackingUAVForTargetList = np.zeros(self.targetNum)
 
-        self.nowRunningGen = 0
         self.UAV_MultiTargets_MAS_Base_Args = ArgsDictValueController(masArgs,
                                                                       self.__UAV_MULTI_TARGET_MAS_BASE_DEFAULT_ARGS,
                                                                       onlyUseDefaultKey=True)
+        self.realTargetPosition = np.zeros((2, targetNum))
 
     def updateAgentState(self):
         super().updateAgentState()
         self.updateNumOfTrackingUAVForTargets()
-
-    def update(self):
-        super().update()
-        self.nowRunningGen += 1
 
     def updateNumOfTrackingUAVForTargets(self):
         for index in range(self.numOfTrackingUAVForTargetList.size):
@@ -58,7 +57,7 @@ class UAV_MultiTarget_MAS_Base(UAV_MAS_Base):
         for item in self.agents:
             agentsPositionState.append(item.positionState)
             agentsVelocity.append(item.velocity)
-            predictVelocityList.append(item.predictVelocityList)
+            predictVelocityList.append(np.array([0. for i in range(len(item.predictVelocityList))]))
 
         self.agentCrowd = {
             "positionState": agentsPositionState,
@@ -78,6 +77,11 @@ class UAV_MultiTarget_MAS_Base(UAV_MAS_Base):
                                               "or trajectory")
             except NotImplementedError as e:
                 print(repr(e))
+
+    def recvFromEnv(self, **kwargs):
+        for i in range(self.targetNum):
+            self.realTargetPosition[:, i] = np.array([kwargs["targetPosition"][i][0],
+                                                      kwargs["targetPosition"][i][1]])
 
     '''
     following is stat function
@@ -107,15 +111,34 @@ class UAV_MultiTarget_MAS_Base(UAV_MAS_Base):
             startIndex, _ = agent.getVelocityFromPredictVelocityList(agent.agentArgs["usePredictVelocityLen"] - remainMoving)
             itemConsume = (agent.predictVelocityList[startIndex] * self.UAV_MultiTargets_MAS_Base_Args[
                 "linearVelocityConsumeFactor"] +
-                           agent.predictVelocityList[startIndex + 1] * self.UAV_MultiTargets_MAS_Base_Args[
+                           abs(agent.predictVelocityList[startIndex + 1]) * self.UAV_MultiTargets_MAS_Base_Args[
                                "angularVelocityConsumeFactor"]) \
                           * self.deltaTime
             return itemConsume
 
         if hasattr(self, "consumeOfEachUAVStat") is False:
-            self.ConsumeOfEachUAVStat = []
+            self.consumeOfEachUAVStat = []
             for item in self.agents:
-                self.ConsumeOfEachUAVStat.append([np.array([float(self.nowRunningGen), calcAgentConsume(item)])])
+                self.consumeOfEachUAVStat.append([np.array([float(self.nowRunningGen), calcAgentConsume(item)])])
         else:
             for index, item in enumerate(self.agents):
-                self.ConsumeOfEachUAVStat[index].append(np.array([float(self.nowRunningGen), calcAgentConsume(item)]))
+                self.consumeOfEachUAVStat[index].append(np.array([float(self.nowRunningGen), calcAgentConsume(item)]))
+
+    """
+    @brief: record the distance between target tracked and uav
+    """
+
+    def UAV_MultiTargets_MAS_Stat_disBetweenTargetAndUAV(self, **kwargs):
+        def calcDistanceBetweenTargetAndUAV(agent):
+            trackingTargetIndex = agent.trackingTargetIndex
+            return calcDistance(agent.positionState[0: 2], self.realTargetPosition[:, trackingTargetIndex])
+
+
+        if hasattr(self, "disBetweenTargetAndUAVStat") is False:
+            self.disBetweenTargetAndUAVStat = []
+            for item in self.agents:
+                self.disBetweenTargetAndUAVStat.append([np.array([float(self.nowRunningGen), calcDistanceBetweenTargetAndUAV(item)])])
+        else:
+            for index, item in enumerate(self.agents):
+                self.disBetweenTargetAndUAVStat[index].append(
+                    np.array([float(self.nowRunningGen), calcDistanceBetweenTargetAndUAV(item)]))

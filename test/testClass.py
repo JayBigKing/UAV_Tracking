@@ -48,8 +48,10 @@ def test3():
     t2.hh = 190
     print(t1.hh)
     print(t2.hh)
-    t1.toDel()
-    print(t1.hh)
+    # t1.toDel()
+    # print(t1.hh)
+    TestCopyPointer = TestCopy
+    print(TestCopyPointer.__name__)
 
 
 def main():

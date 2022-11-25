@@ -25,7 +25,7 @@ class UAV_Agent(Agent_UAV_Base):
         "JConFactor": .1,
         "JColFactor": 1.,
         "JComFactor": 1.,
-        "minDistanceThreshold": 10.,
+        "minDistanceThreshold": 9.,
         "smallDistanceBlameFactor": 19.,
         "maxDistanceThreshold": 30.,
         "bigDistanceBlameFactor": 15.,

@@ -12,9 +12,11 @@ import numpy as np
 from MAS.Agents.UAV_Agent.UAV_Common import calcMovingForUAV, calcDistance
 from MAS.Agents.UAV_Agent.UAV_Agent import UAV_Agent
 
+
 class UAV_MultiTarget_Agent(UAV_Agent):
     __UAV_MULTI_TARGET_AGENT_DEFAULT_ARGS = {
         "JBalanceFactor": .9,
+        "deltaDisForMinDisThreshold": 10.,
     }
 
     def __init__(self, initPositionState, linearVelocityRange, angularVelocityRange, optimizerCls, agentArgs,
@@ -28,15 +30,14 @@ class UAV_MultiTarget_Agent(UAV_Agent):
         optimizerInitArgs["optimizerLearningDimNum"] += 1
 
         self.optimizer = optimizerCls(n=optimizerInitArgs["n"],
-                                 dimNum=optimizerInitArgs["optimizerLearningDimNum"],
-                                 maxConstraint=optimizerInitArgs["maxConstraint"],
-                                 minConstraint=optimizerInitArgs["minConstraint"],
-                                 evalVars=self.evalVars,
-                                 otimizeWay=optimizerInitArgs["optimizeWay"],
-                                 needEpochTimes=optimizerInitArgs["needEpochTimes"],
-                                 ECArgs=optimizerComputationArgs,
-                                 otherTerminalHandler=self.optimizerTerminalHandler)
-
+                                      dimNum=optimizerInitArgs["optimizerLearningDimNum"],
+                                      maxConstraint=optimizerInitArgs["maxConstraint"],
+                                      minConstraint=optimizerInitArgs["minConstraint"],
+                                      evalVars=self.evalVars,
+                                      otimizeWay=optimizerInitArgs["optimizeWay"],
+                                      needEpochTimes=optimizerInitArgs["needEpochTimes"],
+                                      ECArgs=optimizerComputationArgs,
+                                      otherTerminalHandler=self.optimizerTerminalHandler)
 
         self.targetNum = targetNum
         self.predictorCls = predictorCls
@@ -58,6 +59,13 @@ class UAV_MultiTarget_Agent(UAV_Agent):
                 calcDistance(self.positionState, self.targetPositionList[self.trackingTargetIndex][0]) *
                 self.optimizer.ECArgsDictValueController["fittingMinDenominator"])
 
+        if len(self.agentCrowd["predictVelocityList"]) > 0:
+            if len(self.agentCrowd["predictVelocityList"][0]) < self.optimizer.dimNum:
+                for i in range(len(self.agentCrowd["predictVelocityList"])):
+                    predictVelocityListForItemList = self.agentCrowd["predictVelocityList"][i].tolist()
+                    predictVelocityListForItemList.insert(0, 0.)
+                    self.agentCrowd["predictVelocityList"][i] = np.array(predictVelocityListForItemList)
+
     # def optimization(self):
     #     super().optimization()
 
@@ -76,10 +84,10 @@ class UAV_MultiTarget_Agent(UAV_Agent):
         #        self.agentArgs["JConFactor"] * self.evalVars_JConsume(chromosome,self.predictVelocityLen) + \
         #        self.agentArgs["JColFactor"] * self.evalVars_JCollision(chromosome, self.predictVelocityLen) + \
         #        self.agentArgs["JComFactor"] * self.evalVars_JCommunication(chromosome, self.predictVelocityLen)
-        return  self.agentArgs["JBalanceFactor"] * self.evalVars_JBalance(chromosome, self.predictVelocityLen) +\
-                self.agentArgs["JTaskFactor"] * self.evalVars_JTask(chromosome,self.predictVelocityLen) + \
-                self.agentArgs["JConFactor"] * self.evalVars_JConsume(chromosome, self.predictVelocityLen)
-
+        return self.agentArgs["JBalanceFactor"] * self.evalVars_JBalance(chromosome, self.predictVelocityLen) + \
+               self.agentArgs["JTaskFactor"] * self.evalVars_JTask(chromosome, self.predictVelocityLen) + \
+               self.agentArgs["JConFactor"] * self.evalVars_JConsume(chromosome, self.predictVelocityLen) + \
+               self.agentArgs["JColFactor"] * self.evalVars_JCollision(chromosome, self.predictVelocityLen)
 
     def getVelocityFromPredictVelocityList(self, velocityIndex):
         velocityLen = self.velocity.size
@@ -118,3 +126,34 @@ class UAV_MultiTarget_Agent(UAV_Agent):
         JTaskMax = max(np.max(JTaskList), originDisFromTarget * 2.)
         JTaskVal = ((np.average(JTaskList)) / (JTaskMax))
         return JTaskVal
+
+    def evalVars_JCollision(self, chromosome, *args):
+        def JCollisionMeasureFunc(distanceFromItem):
+            return 0.5 - np.tanh(8 * (distanceFromItem - self.agentArgs["minDistanceThreshold"] - 0.5 * self.agentArgs[
+                "deltaDisForMinDisThreshold"]) / self.agentArgs["deltaDisForMinDisThreshold"])
+
+        predictVelocityLen = args[0]
+        JCollisionList = []
+
+        for index, item in enumerate(self.agentCrowd["positionState"]):
+            if index != self.selfIndex:
+                oldPositionList = self.positionState
+                oldPositionListForItem = item
+                chromosomeForItem = self.agentCrowd["predictVelocityList"][index]
+
+                for i in range(predictVelocityLen):
+                    startIndex, endIndex = self.getVelocityFromPredictVelocityList(i)
+                    newPositionState = calcMovingForUAV(oldPositionList, chromosome[startIndex: endIndex],
+                                                        self.deltaTime)
+                    newPositionStateForItem = calcMovingForUAV(oldPositionListForItem,
+                                                               chromosomeForItem[startIndex: endIndex],
+                                                               self.deltaTime)
+                    distanceFromItem = calcDistance(newPositionState[0: 2], newPositionStateForItem[0: 2])
+                    JCollisionList.append(JCollisionMeasureFunc(distanceFromItem))
+
+                    oldPositionList = newPositionState
+                    oldPositionListForItem = newPositionStateForItem
+
+        JCollisionVal = np.average(np.array(JCollisionList))
+
+        return JCollisionVal
