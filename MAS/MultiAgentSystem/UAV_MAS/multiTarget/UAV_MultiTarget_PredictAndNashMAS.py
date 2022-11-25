@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-@Project : UAV_Traking
+@Project : UAV_Tracking
 @File    : UAV_MultiTarget_PredictAndNashMAS.py
 @Author  : jay.zhu
 @Time    : 2022/11/5 20:05

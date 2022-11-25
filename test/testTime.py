@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-@Project : UAV_Traking
+@Project : UAV_Tracking
 @File    : testTime.py
 @Author  : jay.zhu
 @Time    : 2022/11/14 13:52

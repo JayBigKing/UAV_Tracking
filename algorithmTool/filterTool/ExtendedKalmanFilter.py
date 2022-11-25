@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-@Project : UAV_Traking
+@Project : UAV_Tracking
 @File    : ExtendedKalmanFilter.py
 @Author  : jay.zhu
 @Time    : 2022/10/21 21:42

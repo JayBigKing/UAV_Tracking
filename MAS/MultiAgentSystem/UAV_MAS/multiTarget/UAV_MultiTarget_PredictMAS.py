@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-@Project : UAV_Traking
+@Project : UAV_Tracking
 @File    : UAV_MultiTarget_PredictMAS.py
 @Author  : jay.zhu
 @Time    : 2022/11/2 17:06

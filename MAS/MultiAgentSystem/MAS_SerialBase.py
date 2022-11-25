@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-@Project : UAV_Traking
+@Project : UAV_Tracking
 @File    : MAS_SerialBase.py
 @Author  : jay.zhu
 @Time    : 2022/11/6 15:01
