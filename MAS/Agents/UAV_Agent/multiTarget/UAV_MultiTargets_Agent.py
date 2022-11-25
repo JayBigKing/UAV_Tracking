@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-@Project : UAV_Traking
+@Project : UAV_Tracking
 @File    : UAV_MultiTarget_Agent.py
 @Author  : jay.zhu
 @Time    : 2022/11/4 20:03

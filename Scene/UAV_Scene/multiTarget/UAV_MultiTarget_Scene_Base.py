@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-@Project : UAV_Traking
+@Project : UAV_Tracking
 @File    : UAV_MultiTarget_Scene_Base.py
 @Author  : jay.zhu
 @Time    : 2022/11/5 14:06

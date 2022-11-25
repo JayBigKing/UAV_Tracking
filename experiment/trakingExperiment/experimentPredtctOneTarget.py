@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-@Project : UAV_Traking
+@Project : UAV_Tracking
 @File    : experimentPredtctOneTarget.py
 @Author  : jay.zhu
 @Time    : 2022/10/28 18:09
