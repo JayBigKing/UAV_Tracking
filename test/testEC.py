@@ -4,6 +4,7 @@ import numpy as np
 from Jay_Tool.EfficiencyTestTool.EfficiencyTestTool import clockTester
 from EC.EC_Base import EC_Base,EC_OtimizeWay,EC_SelectType,EC_CodingType
 from EC.EC_WithStat_Base import EC_WithStat_Base
+from EC.DiffEC.EC_DiffEC_ADE import EC_DiffEC_ADE, EC_DiffEC_Base
 from EC.dynamicOpt.EC_DynamicOpt_HyperMutation import EC_DynamicOpt_HyperMutation
 
 
@@ -55,9 +56,15 @@ def test3():
     print(avgOfBestChromosomesVal)
 
 
+@clockTester
+def testADE():
+    eb = EC_DiffEC_ADE(n=100, dimNum=1, maxConstraint=[100.], minConstraint=[-100.],
+                       evalVars=evalFunc1, otimizeWay=EC_OtimizeWay.MIN ,needEpochTimes=100, ECArgs={"borders":[1]})
+    chromosome, bestVal = eb.optimize()
+    print(f'best chromosome : {chromosome !r}\r\nbestVal : {bestVal !r}'.format(chromosome=chromosome, bestVal=bestVal))
 
 def main():
-    test3()
+    testADE()
 
 if __name__ == "__main__":
     main()
