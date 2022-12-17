@@ -8,7 +8,7 @@
 @Time    : 2022/10/14 12:42
 """
 import numpy as np
-from EC.EC_Common import ArgsDictValueController
+from optimization.common.ArgsDictValueController import ArgsDictValueController
 
 
 class NashMAS:

@@ -8,7 +8,7 @@
 @Time    : 2022/10/14 14:09
 """
 import numpy as np
-from EC.EC_Common import ArgsDictValueController
+from optimization.common.ArgsDictValueController import ArgsDictValueController
 from MAS.MultiAgentSystem.UAV_MAS.UAV_MAS_Base import UAV_MAS_Base
 
 

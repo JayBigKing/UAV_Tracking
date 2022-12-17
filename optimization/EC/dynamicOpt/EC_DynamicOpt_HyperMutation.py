@@ -7,9 +7,9 @@
 @Author  : jay.zhu
 @Time    : 2022/10/11 22:58
 """
-from EC.EC_Common import ArgsDictValueController
-from EC.dynamicOpt.EC_DynamicOpt_Base import EC_DynamicOpt_Base
-from EC.dynamicOpt.EC_ChangeDetect import EC_ChangeDetector_PerformanceThresh
+from optimization.common.ArgsDictValueController import ArgsDictValueController
+from optimization.EC.dynamicOpt.EC_DynamicOpt_Base import EC_DynamicOpt_Base
+from optimization.EC.dynamicOpt.EC_ChangeDetect import EC_ChangeDetector_PerformanceThresh
 
 
 class EC_DynamicOpt_HyperMutation(EC_DynamicOpt_Base):

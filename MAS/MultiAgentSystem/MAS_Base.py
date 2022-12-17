@@ -8,7 +8,7 @@
 @Time    : 2022/10/12 22:29
 """
 
-from EC.EC_Common import ArgsDictValueController
+from optimization.common.ArgsDictValueController import ArgsDictValueController
 
 class MAS_Base:
     MAS_BASE_DEFAULT_ARGS = {

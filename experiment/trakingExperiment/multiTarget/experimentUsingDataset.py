@@ -11,27 +11,92 @@ import sys
 import time
 
 sys.path.append("../../../")
-import random
 from experiment.experimentInit import experimentInit
 from Jay_Tool.EfficiencyTestTool.EfficiencyTestTool import clockTester
 from experiment.datasetOperator import UAV_Tracking_DatasetOperator
 from Scene.UAV_Scene.multiTarget.UAV_MultiTarget_UsingDatasetScene import UAV_MultiTarget_UsingDatasetScene
 from MAS.Agents.UAV_Agent import UAV_Dataset_TargetAgent
-from MAS.Agents.UAV_Agent.multiTarget.UAV_MultiTargets_Agent import UAV_MultiTarget_Agent
 from MAS.Agents.UAV_Agent.multiTarget.UAV_MultiTargets_ProbabilitySelectTargetAgent import \
     UAV_MultiTargets_ProbabilitySelectTargetAgent
-from EC.dynamicOpt.EC_DynamicOpt_InitAndHyperMutation import EC_DynamicOpt_InitAndHyperMutation
+from optimization.EC.dynamicOpt.EC_DynamicOpt_InitAndHyperMutation import EC_DynamicOpt_InitAndHyperMutation
+from optimization.PSO.PSO_Tracking import PSO_Tracking
+from optimization.EC.DiffEC.EC_DiffEC_Tracking_ADE import EC_DiffEC_Tracking_ADE
+from optimization.EC.DiffEC.EC_DiffEC_Tracking_DE import EC_DiffEC_Tracking_DE
 from MAS.MultiAgentSystem.UAV_MAS.multiTarget.UAV_MultiTarget_PredictMAS import UAV_MultiTarget_PredictMAS
 from MAS.MultiAgentSystem.UAV_MAS.multiTarget.UAV_MultiTarget_PredictAndNashMAS import UAV_MultiTarget_PredictAndNashMAS
-from MAS.MultiAgentSystem.UAV_MAS.multiTarget.UAV_MultiTarget_PredictAndSerialMAS import \
-    UAV_MultiTarget_PredictAndSerialMAS
 
-NEED_RUNNING_TIME = 40
+PSO_OPTIMIZATION_COMPUTATION_ARGS = {
+    "fittingMinDenominator": 0.2,
+    "w": 0.6,
+    "c1": 2.,
+    "c2": 0.3,
+    "velocityFactor": 0.1,
+    "borders": [0, 1],
+}
+
+ADE_OPTIMIZATION_COMPUTATION_ARGS = {
+    "floatMutationOperateArg": 0.3,
+    "floatCrossoverAlpha": 0.5,
+    "mutationProbability": 0.05,
+    "fittingMinDenominator": 0.2,
+
+    "DiffCR0": 0.1,
+    "DiffCR1": 0.6,
+    "DiffF0": 0.1,
+    "DiffF1": 0.6,
+    "borders": [0, 1],
+}
+
+DYN_EC_OPTIMIZATION_COMPUTATION_ARGS = {
+    "floatMutationOperateArg": 0.3,
+    "floatCrossoverAlpha": 0.5,
+    "mutationProbability": 0.05,
+    "fittingMinDenominator": 0.2,
+    "mutationProbabilityWhenChange": 0.5,
+    "mutationProbabilityWhenNormal": 0.05,
+    "performanceThreshold": 3,
+    "refractoryPeriodLength": 2,
+    "borders": [0, 1],
+}
+
+OPTIMIZATION_AND_ARGS_DICT = {
+    "dynEC": {
+        "class": EC_DynamicOpt_InitAndHyperMutation,
+        "computationArgs": DYN_EC_OPTIMIZATION_COMPUTATION_ARGS,
+    },
+    "ADE": {
+        "class": EC_DiffEC_Tracking_ADE,
+        "computationArgs": ADE_OPTIMIZATION_COMPUTATION_ARGS,
+    },
+    "DE": {
+        "class": EC_DiffEC_Tracking_DE,
+        "computationArgs": ADE_OPTIMIZATION_COMPUTATION_ARGS,
+    },
+    "PSO": {
+        "class": PSO_Tracking,
+        "computationArgs": PSO_OPTIMIZATION_COMPUTATION_ARGS,
+    }
+}
+
+MAS_AND_ARGS_DICT = {
+    "PredictMAS": {
+        "class": UAV_MultiTarget_PredictMAS,
+        "needTimes": 1,
+    },
+    "PredictAndNashMAS": {
+        "class": UAV_MultiTarget_PredictAndNashMAS,
+        "needTimes": 30,
+    }
+}
+
+NEED_RUNNING_TIME = 300
+
+
 def generateDataset():
     AGENTS_NUM = 4
     TARGET_NUM = 2
     AGENT_INIT_POSITION_RANGE = [[10., 20.], [10., 30.], [0., 0.]]
-    TARGET_INIT_POSITION_RANGE = [[10., 10.], [10., 10.], [0., 0.]]
+    TARGET_INIT_POSITION_RANGE = [[10., 100.], [10., 100.], [0., 0.]]
     TARGET_MOVING_WAY = "movingAsSin"
 
     datasetGenerator = UAV_Tracking_DatasetOperator.UAV_Tracking_DatasetGenerator()
@@ -39,13 +104,15 @@ def generateDataset():
                                      movingTimes=NEED_RUNNING_TIME,
                                      agentInitPosRange=AGENT_INIT_POSITION_RANGE,
                                      targetInitPosRange=TARGET_INIT_POSITION_RANGE,
-                                     targetMovingWay=TARGET_MOVING_WAY)
+                                     targetMovingWay=TARGET_MOVING_WAY,
+                                     targetLinearVelocityRange=[0., 10.],
+                                     targetAngularVelocityRange=[-30., 30.])
 
-def experimentBase(datasetPath):
+def experimentBase(datasetPath, optimizerKey):
     AGENT_CLS = UAV_MultiTargets_ProbabilitySelectTargetAgent
-    OPTIMIZER_CLS = EC_DynamicOpt_InitAndHyperMutation
     TARGET_CLS = UAV_Dataset_TargetAgent.UAV_Dataset_TargetAgent
-    MAS_CLS = UAV_MultiTarget_PredictMAS
+    OPTIMIZER_KEY = optimizerKey
+    MAS_KEY = "PredictAndNashMAS"
 
     DELTA_TIME = .5
     PREDICT_VELOCITY_LEN = 3
@@ -65,7 +132,7 @@ def experimentBase(datasetPath):
         "fittingIsSameThreshold": 1e-4,
         "JTaskFactor": .4,
         "JConFactor": .0,
-        "JColFactor": .0,
+        "JColFactor": .4,
         "JComFactor": 1.,
         "JBalanceFactor": .4,
         "minDistanceThreshold": MIN_DISTANCE_BETWEEN_UAV_THRESHOLD,
@@ -79,24 +146,14 @@ def experimentBase(datasetPath):
         "dimNum": 2,
         "needEpochTimes": 100
     }
-    EC_COMPUTATION_ARGS = {
-        "floatMutationOperateArg": 0.3,
-        "floatCrossoverAlpha": 0.5,
-        "mutationProbability": 0.05,
-        "fittingMinDenominator": 0.2,
-        "mutationProbabilityWhenChange": 0.5,
-        "mutationProbabilityWhenNormal": 0.05,
-        "performanceThreshold": 3,
-        "refractoryPeriodLength": 2,
-        "borders": [0, 1],
-    }
+    EC_COMPUTATION_ARGS = OPTIMIZATION_AND_ARGS_DICT[OPTIMIZER_KEY]["computationArgs"]
     OPTIMIZER_ARGS = {
         "optimizerInitArgs": EC_INIT_ARGS,
         "optimizerComputationArgs": EC_COMPUTATION_ARGS
     }
 
     MAS_ARGS = {
-        "optimizationNeedTimes": 1,
+        "optimizationNeedTimes": MAS_AND_ARGS_DICT[MAS_KEY]["needTimes"],
         "allCountDiffNashBalanceValue": 5e-1,
         "oneDiffNashBalanceValue": 1e-4,
         "predictVelocityLen": PREDICT_VELOCITY_LEN,
@@ -110,32 +167,57 @@ def experimentBase(datasetPath):
     UAV_Dataset = datasetLoader.loadDataset(datasetPath)
 
     uav_scene_base = UAV_MultiTarget_UsingDatasetScene(
-                                                  UAV_Dataset=UAV_Dataset,
-                                                  agentsCls=AGENT_CLS,
-                                                  agentsArgs=AGENT_ARGS,
-                                                  optimizerCls=OPTIMIZER_CLS,
-                                                  optimizerArgs=OPTIMIZER_ARGS,
-                                                  targetCls=TARGET_CLS,
-                                                  MAS_Cls=MAS_CLS,
-                                                  MAS_Args=MAS_ARGS,
-                                                  needRunningTime=NEED_RUNNING_TIME,
-                                                  deltaTime=DELTA_TIME,
-                                                  figureSavePath="../../experimentRes/experimentUsingDataset/%s_%s_%s" % (
-                                                  time.strftime("%Y.%m.%d", time.localtime()), MAS_CLS.__name__, OPTIMIZER_CLS.__name__)
-                                                  )
+        UAV_Dataset=UAV_Dataset,
+        agentsCls=AGENT_CLS,
+        agentsArgs=AGENT_ARGS,
+        optimizerCls=OPTIMIZATION_AND_ARGS_DICT[OPTIMIZER_KEY]["class"],
+        optimizerArgs=OPTIMIZER_ARGS,
+        targetCls=TARGET_CLS,
+        MAS_Cls=MAS_AND_ARGS_DICT[MAS_KEY]["class"],
+        MAS_Args=MAS_ARGS,
+        needRunningTime=NEED_RUNNING_TIME,
+        deltaTime=DELTA_TIME,
+        figureSavePath="../../experimentRes/experimentUsingDataset/%s_%s_%s" % (
+            time.strftime("%Y.%m.%d", time.localtime()), MAS_AND_ARGS_DICT[MAS_KEY]["class"].__name__,
+            OPTIMIZATION_AND_ARGS_DICT[OPTIMIZER_KEY]["class"].__name__,),
+        userStatOutputRegisters=["UAV_MULTI_TARGET_SCENE_BASE_DIS_BETWEEN_TARGET_AND_UAV_STORE",
+                                 "UAV_MULTI_TARGET_SCENE_BASE_AVG_DIS_STORE",
+                                 "UAV_MULTI_TARGET_SCENE_BASE_AVG_DIS_STABILITY_STORE",
+                                 "UAV_MULTI_TARGET_SCENE_BASE_TARGET_TRACKED_NUM_VARIANCE_STORE",
+                                 "UAV_MULTI_TARGET_SCENE_BASE_EFFECTIVE_TIME_STORE",
+                                 "UAV_SCENE_BASE_UAVAlertDisStore",]
+    )
 
     return uav_scene_base
 
-DATASET_PATH = "./agentTrackingDataset_20221130_224603.json"
+
+DATASET_PATH = "sinTarget.json"
+
+
+@clockTester
+def experiment1Inner(optimizerKey):
+    uav_scene_base = experimentBase(DATASET_PATH, optimizerKey)
+    uav_scene_base.run()
+    print(r'the optimizerKey is %s' % optimizerKey)
+
+
 @clockTester
 def experiment1():
-    uav_scene_base = experimentBase(DATASET_PATH)
-    uav_scene_base.run()
+    optimizerKey = "DE"
+    experiment1Inner(optimizerKey)
 
-def main():
+@clockTester
+def experiment2():
+    optimizerKeyList = OPTIMIZATION_AND_ARGS_DICT.keys()
+    for optimizerKey in optimizerKeyList:
+        experiment1Inner(optimizerKey)
+
+
+def experiment():
     experimentInit()
     # generateDataset()
     experiment1()
 
+
 if __name__ == "__main__":
-    main()
+    experiment()

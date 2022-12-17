@@ -3,9 +3,9 @@
 
 """
 @Project : UAV_Tracking
-@File    : experimentPredictMultiTarget.py
+@File    : experimentPredictForCompare.py
 @Author  : jay.zhu
-@Time    : 2022/11/5 15:32
+@Time    : 2022/12/15 18:43
 """
 import sys
 import time
@@ -19,16 +19,87 @@ from MAS.Agents.UAV_Agent import UAV_TargetAgent
 from MAS.Agents.UAV_Agent.multiTarget.UAV_MultiTargets_ProbabilitySelectTargetAgent import \
     UAV_MultiTargets_ProbabilitySelectTargetAgent
 from optimization.EC.dynamicOpt.EC_DynamicOpt_InitAndHyperMutation import EC_DynamicOpt_InitAndHyperMutation
+from optimization.PSO.PSO_Tracking import PSO_Tracking
+from optimization.EC.DiffEC.EC_DiffEC_Tracking_ADE import EC_DiffEC_Tracking_ADE
+from optimization.EC.DiffEC.EC_DiffEC_Tracking_DE import EC_DiffEC_Tracking_DE
+
 from MAS.MultiAgentSystem.UAV_MAS.multiTarget.UAV_MultiTarget_PredictMAS import UAV_MultiTarget_PredictMAS
+from MAS.MultiAgentSystem.UAV_MAS.multiTarget.UAV_MultiTarget_PredictAndNashMAS import UAV_MultiTarget_PredictAndNashMAS
+
+PSO_OPTIMIZATION_COMPUTATION_ARGS = {
+    "fittingMinDenominator": 0.2,
+    "w": 0.6,
+    "c1": 2.,
+    "c2": 0.3,
+    "velocityFactor": 0.1,
+    "borders": [0, 1],
+}
+
+ADE_OPTIMIZATION_COMPUTATION_ARGS = {
+    "floatMutationOperateArg": 0.3,
+    "floatCrossoverAlpha": 0.5,
+    "mutationProbability": 0.05,
+    "fittingMinDenominator": 0.2,
+
+    "DiffCR0": 0.1,
+    "DiffCR1": 0.6,
+    "DiffF0": 0.1,
+    "DiffF1": 0.6,
+    "borders": [0, 1],
+}
+
+DYN_EC_OPTIMIZATION_COMPUTATION_ARGS = {
+    "floatMutationOperateArg": 0.3,
+    "floatCrossoverAlpha": 0.5,
+    "mutationProbability": 0.05,
+    "fittingMinDenominator": 0.2,
+    "mutationProbabilityWhenChange": 0.5,
+    "mutationProbabilityWhenNormal": 0.05,
+    "performanceThreshold": 3,
+    "refractoryPeriodLength": 2,
+    "borders": [0, 1],
+}
+
+OPTIMIZATION_AND_ARGS_DICT = {
+    "dynEC": {
+        "class": EC_DynamicOpt_InitAndHyperMutation,
+        "computationArgs": DYN_EC_OPTIMIZATION_COMPUTATION_ARGS,
+    },
+    "ADE": {
+        "class": EC_DiffEC_Tracking_ADE,
+        "computationArgs": ADE_OPTIMIZATION_COMPUTATION_ARGS,
+    },
+    "DE": {
+        "class": EC_DiffEC_Tracking_DE,
+        "computationArgs": ADE_OPTIMIZATION_COMPUTATION_ARGS,
+    },
+    "PSO": {
+        "class": PSO_Tracking,
+        "computationArgs": PSO_OPTIMIZATION_COMPUTATION_ARGS,
+    }
+}
+
+MAS_AND_ARGS_DICT = {
+    "PredictMAS": {
+        "class": UAV_MultiTarget_PredictMAS,
+        "needTimes": 1,
+    },
+    "PredictAndNashMAS": {
+        "class": UAV_MultiTarget_PredictAndNashMAS,
+        "needTimes": 30,
+    }
+}
 
 
 def experimentBase():
     AGENTS_NUM = 4
     TARGET_NUM = 2
     AGENT_CLS = UAV_MultiTargets_ProbabilitySelectTargetAgent
-    OPTIMIZER_CLS = EC_DynamicOpt_InitAndHyperMutation
+    # OPTIMIZER_CLS = EC_DiffEC_Tracking_ADE
+    OPTIMIZER_KEY = "DE"
+    MAS_KEY = "PredictAndNashMAS"
     TARGET_CLS = UAV_TargetAgent.UAV_TargetAgent
-    MAS_CLS = UAV_MultiTarget_PredictMAS
+    # MAS_CLS = UAV_MultiTarget_PredictAndNashMAS
 
     DELTA_TIME = .5
     AGENT_INIT_POSITION_RANGE = [[10., 20.], [10., 30.]]
@@ -65,20 +136,10 @@ def experimentBase():
         "dimNum": 2,
         "needEpochTimes": 100
     }
-    EC_COMPUTATION_ARGS = {
-        "floatMutationOperateArg": 0.3,
-        "floatCrossoverAlpha": 0.5,
-        "mutationProbability": 0.05,
-        "fittingMinDenominator": 0.2,
-        "mutationProbabilityWhenChange": 0.5,
-        "mutationProbabilityWhenNormal": 0.05,
-        "performanceThreshold": 3,
-        "refractoryPeriodLength": 2,
-        "borders": [0, 1],
-    }
+    OPTIMIZATION_COMPUTATION_ARGS = OPTIMIZATION_AND_ARGS_DICT[OPTIMIZER_KEY]["computationArgs"]
     OPTIMIZER_ARGS = {
         "optimizerInitArgs": EC_INIT_ARGS,
-        "optimizerComputationArgs": EC_COMPUTATION_ARGS
+        "optimizerComputationArgs": OPTIMIZATION_COMPUTATION_ARGS
     }
 
     TARGET_INIT_POSITION_RANGE = [[10., 100.], [10., 100.]]
@@ -88,12 +149,12 @@ def experimentBase():
                               0],
         "linearVelocityRange": [0., 10.],
         "angularVelocityRange": [-30., 30.],
-        "movingFuncRegister": "randMoving",
+        "movingFuncRegister": "movingAsSin",
         "deltaTime": DELTA_TIME,
     } for i in range(AGENTS_NUM)]
 
     MAS_ARGS = {
-        "optimizationNeedTimes": 1,
+        "optimizationNeedTimes": MAS_AND_ARGS_DICT[MAS_KEY]["needTimes"],
         "allCountDiffNashBalanceValue": 5e-1,
         "oneDiffNashBalanceValue": 1e-4,
         "predictVelocityLen": PREDICT_VELOCITY_LEN,
@@ -103,22 +164,23 @@ def experimentBase():
         "upperBoundOfUAVDis": False
     }
 
-    NEED_RUNNING_TIME = 40
+    NEED_RUNNING_TIME = 200
 
     uav_scene_base = UAV_MultiTarget_PredictScene(agentsNum=AGENTS_NUM,
                                                   agentsCls=AGENT_CLS,
                                                   agentsArgs=AGENT_ARGS,
-                                                  optimizerCls=OPTIMIZER_CLS,
+                                                  optimizerCls=OPTIMIZATION_AND_ARGS_DICT[OPTIMIZER_KEY]["class"],
                                                   optimizerArgs=OPTIMIZER_ARGS,
                                                   targetCls=TARGET_CLS,
                                                   targetArgs=TARGET_ARGS_LIST,
-                                                  MAS_Cls=MAS_CLS,
+                                                  MAS_Cls=MAS_AND_ARGS_DICT[MAS_KEY]["class"],
                                                   MAS_Args=MAS_ARGS,
                                                   needRunningTime=NEED_RUNNING_TIME,
                                                   targetNum=TARGET_NUM,
                                                   deltaTime=DELTA_TIME,
-                                                  figureSavePath="../../experimentRes/experimentPredictMultiTarget/%s_%s" % (
-                                                  time.strftime("%Y.%m.%d", time.localtime()), MAS_CLS.__name__)
+                                                  figureSavePath="../../experimentRes/experimentPredictMultiTarget/%s_%s_%s" % (
+                                                      time.strftime("%Y.%m.%d", time.localtime()), MAS_AND_ARGS_DICT[MAS_KEY]["class"].__name__,
+                                                      OPTIMIZATION_AND_ARGS_DICT[OPTIMIZER_KEY]["class"].__name__)
                                                   )
 
     return uav_scene_base

@@ -1,11 +1,11 @@
 import random
-
 import numpy as np
 from Jay_Tool.EfficiencyTestTool.EfficiencyTestTool import clockTester
-from EC.EC_Base import EC_Base,EC_OtimizeWay,EC_SelectType,EC_CodingType
-from EC.EC_WithStat_Base import EC_WithStat_Base
-from EC.DiffEC.EC_DiffEC_ADE import EC_DiffEC_ADE, EC_DiffEC_Base
-from EC.dynamicOpt.EC_DynamicOpt_HyperMutation import EC_DynamicOpt_HyperMutation
+from optimization.common.optimizationCommonEnum import OptimizationWay
+from optimization.EC.EC_Base import EC_Base
+from optimization.EC.EC_WithStat_Base import EC_WithStat_Base
+from optimization.EC.DiffEC.EC_DiffEC_ADE import EC_DiffEC_ADE
+from optimization.EC.dynamicOpt.EC_DynamicOpt_HyperMutation import EC_DynamicOpt_HyperMutation
 
 
 def evalFunc1(chromosome):
@@ -27,15 +27,18 @@ def evalFunc2(chromosome):
 
     return (2 * chromosome[0] - evalFunc2Val) ** 2
 
+def evalFunc3(solution):
+    return np.sin(solution[0]) + 1
+
 @clockTester
 def test1():
-    eb = EC_Base(100, 1, [100.], [-100.], evalFunc1, EC_OtimizeWay.MAX ,100, {"borders":[1]})
+    eb = EC_Base(100, 1, [100.], [-100.], evalFunc1, OptimizationWay.MAX ,100, {"borders":[1]})
     chromosome, bestVal = eb.optimize()
     print(f'best chromosome : {chromosome !r}\r\nbestVal : {bestVal !r}'.format(chromosome=chromosome, bestVal=bestVal))
 
 @clockTester
 def test2():
-    eb = EC_WithStat_Base(10, 1, [100.], [-100.], evalFunc1, EC_OtimizeWay.MIN ,30, {"borders":[1]}, ["bestOverGen"])
+    eb = EC_WithStat_Base(10, 1, [100.], [-100.], evalFunc1, OptimizationWay.MIN ,30, {"borders":[1]}, ["bestOverGen"])
     chromosome, bestVal = eb.optimize()
     avgOfBestChromosomesVal, bestChromosomesOverGen = eb.EC_WithStat_GetBestOverGen()
     print(f'best chromosome : {chromosome !r}\r\nbestVal : {bestVal !r}'.format(chromosome=chromosome, bestVal=bestVal))
@@ -45,7 +48,7 @@ def test2():
 
 @clockTester
 def test3():
-    eb = EC_DynamicOpt_HyperMutation(10, 1, [100.], [-100.], evalFunc2, EC_OtimizeWay.MIN ,
+    eb = EC_DynamicOpt_HyperMutation(10, 1, [100.], [-100.], evalFunc2, OptimizationWay.MIN ,
                                      needEpochTimes=100,
                                      ECArgs={"borders":[1], "performanceThreshold": 2., "refractoryPeriodLength":1},
                                      statRegisters=["bestOverGen"])
@@ -59,12 +62,22 @@ def test3():
 @clockTester
 def testADE():
     eb = EC_DiffEC_ADE(n=100, dimNum=1, maxConstraint=[100.], minConstraint=[-100.],
-                       evalVars=evalFunc1, otimizeWay=EC_OtimizeWay.MIN ,needEpochTimes=100, ECArgs={"borders":[1]})
+                       evalVars=evalFunc1, otimizeWay=OptimizationWay.MIN ,needEpochTimes=100, ECArgs={"borders":[1]})
     chromosome, bestVal = eb.optimize()
     print(f'best chromosome : {chromosome !r}\r\nbestVal : {bestVal !r}'.format(chromosome=chromosome, bestVal=bestVal))
 
+@clockTester
+def testDynEC():
+    eb = EC_DynamicOpt_HyperMutation(10, 1, [0.], [2 * np.pi], evalFunc3, OptimizationWay.MAX ,
+                                     needEpochTimes=100,
+                                     ECArgs={"borders":[1], "performanceThreshold": 2., "refractoryPeriodLength":1},
+                                     statRegisters=["bestOverGen"])
+    chromosome, bestVal = eb.optimize()
+    print(f'best chromosome : {chromosome !r}\r\nbestVal : {bestVal !r}'.format(chromosome=chromosome, bestVal=bestVal))
+
+
 def main():
-    testADE()
+    testDynEC()
 
 if __name__ == "__main__":
     main()

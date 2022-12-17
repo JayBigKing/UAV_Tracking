@@ -8,9 +8,8 @@
 @Time    : 2022/10/9 15:00
 """
 
-from inspect import isfunction
 import numpy as np
-from EC.EC_Base import EC_Base
+from optimization.EC.EC_Base import EC_Base
 from dataStatistics.statFuncListGenerator import statFuncListGenerator
 
 

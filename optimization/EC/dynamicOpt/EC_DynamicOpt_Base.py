@@ -8,8 +8,8 @@
 @Time    : 2022/10/10 20:58
 """
 
-from EC.EC_WithStat_Base import EC_WithStat_Base
-from EC.dynamicOpt.EC_ChangeDetect import EC_ChangeDetector_EvaluateSolutions, \
+from optimization.EC.EC_WithStat_Base import EC_WithStat_Base
+from optimization.EC.dynamicOpt.EC_ChangeDetect import EC_ChangeDetector_EvaluateSolutions, \
     EC_ChangeDetector_BestSolution
 
 

@@ -8,12 +8,12 @@
 @Time    : 2022/10/8 15:00
 """
 
-import collections
 import bisect
 import numpy as np
 import random
 from enum import Enum
-from EC.EC_Common import ArgsDictValueController
+from optimization.common.ArgsDictValueController import ArgsDictValueController
+from optimization.common.optimizationCommonEnum import OptimizationWay
 
 
 class EC_CodingType(Enum):
@@ -29,14 +29,9 @@ class EC_SelectType(Enum):
     TOUR = 1,
 
 
-class EC_OtimizeWay(Enum):
-    MAX = 1
-    MIN = -1
-
-
 class EC_Base:
     '''
-    evolution compution base class
+    evolution computation base class
     '''
 
     # default args for EC optimization
@@ -71,8 +66,8 @@ class EC_Base:
         self.maxConstraint = maxConstraint
         self.minConstraint = minConstraint
         self.evalVars = evalVars
-        if isinstance(otimizeWay, EC_OtimizeWay) is False:
-            raise TypeError("otimizeWay should be an instance of enum EC_OtimizeWay")
+        if isinstance(otimizeWay, OptimizationWay) is False:
+            raise TypeError("otimizeWay should be an instance of enum OptimizationWay")
         else:
             self.optimizeWay = otimizeWay
         # 用最后一个位置来记录最优值
@@ -327,7 +322,7 @@ class EC_Base:
     def fittingOne(self, chromosome, evalVars):
         aimFuncVal = self.callAimFunc(chromosome, evalVars)
         fittingValue = aimFuncVal
-        if self.optimizeWay == EC_OtimizeWay.MIN:
+        if self.optimizeWay == OptimizationWay.MIN:
             # fittingMinDenominator = self.ECArgs["fittingMinDenominator"] if self.ECArgs.get(
             #     "fittingMinDenominator") else self.DEFAULT_EC_BASE_ARGS["fittingMinDenominator"]
             fittingMinDenominator = self.ECArgsDictValueController["fittingMinDenominator"]

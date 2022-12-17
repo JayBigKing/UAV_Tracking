@@ -28,6 +28,7 @@ class UAV_MultiTarget_Agent(UAV_Agent):
         optimizerInitArgs["maxConstraint"].insert(0, float(targetNum) - 0.05)
         optimizerInitArgs["minConstraint"].insert(0, float(0.))
         optimizerInitArgs["optimizerLearningDimNum"] += 1
+        optimizerComputationArgs["borders"].insert(0, 1)
 
         self.optimizer = optimizerCls(n=optimizerInitArgs["n"],
                                       dimNum=optimizerInitArgs["optimizerLearningDimNum"],
@@ -100,6 +101,10 @@ class UAV_MultiTarget_Agent(UAV_Agent):
             self.maxTrackingTargetIndexVar = np.var(maxTrackingTargetIndexVarList)
 
         self.testTrackingTargetIndex = int(chromosome[0])
+        # if self.testTrackingTargetIndex == self.numOfTrackingUAVForTargetList.size:
+        #     self.testTrackingTargetIndex = self.testTrackingTargetIndex - 1
+        #     chromosome[0] = float(self.testTrackingTargetIndex)
+
         numOfTrackingUAVForTargetList = np.array(self.numOfTrackingUAVForTargetList)
         numOfTrackingUAVForTargetList[self.testTrackingTargetIndex] += 1.
         if numOfTrackingUAVForTargetList[self.trackingTargetIndex] >= 1.:

@@ -10,8 +10,8 @@
 import numpy as np
 import random
 from Jay_Tool.LogTool import myLogger
-from EC.EC_Base import EC_CodingType
-from EC.EC_WithStat_Base import EC_WithStat_Base
+from optimization.EC.EC_Base import EC_CodingType
+from optimization.EC.EC_WithStat_Base import EC_WithStat_Base
 
 
 class EC_DiffEC_Base(EC_WithStat_Base):

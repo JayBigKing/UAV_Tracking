@@ -11,7 +11,7 @@ import random
 from Jay_Tool.EfficiencyTestTool.EfficiencyTestTool import clockTester
 from Scene.UAV_Scene.UAV_Scene_Base import UAV_Scene_Base
 from MAS.Agents.UAV_Agent import UAV_Agent, UAV_TargetAgent
-from EC.dynamicOpt.EC_DynamicOpt_HyperMutation import EC_DynamicOpt_HyperMutation
+from optimization.EC.dynamicOpt.EC_DynamicOpt_HyperMutation import EC_DynamicOpt_HyperMutation
 from MAS.MultiAgentSystem.UAV_MAS import UAV_NashMAS
 
 

@@ -7,6 +7,7 @@
 @Author  : jay.zhu
 @Time    : 2022/11/29 19:59
 """
+from Jay_Tool.visualizeTool.CoorDiagram import CoorDiagram
 from Scene.UAV_Scene.multiTarget.UAV_MultiTarget_PredictScene import UAV_MultiTarget_PredictScene
 
 
@@ -14,7 +15,7 @@ class UAV_MultiTarget_UsingDatasetScene(UAV_MultiTarget_PredictScene):
     # def __init__(self, agentsNum, agentsCls, agentsArgs, optimizerCls, optimizerArgs, targetCls, targetArgs, MAS_Cls,
     #              MAS_Args, needRunningTime, predictorCls = None, targetNum=1, deltaTime=1., figureSavePath = None):
     def __init__(self, UAV_Dataset, agentsCls, agentsArgs, optimizerCls, optimizerArgs, targetCls, MAS_Cls,
-                 MAS_Args, needRunningTime, predictorCls=None, deltaTime=1., figureSavePath=None):
+                 MAS_Args, needRunningTime, predictorCls=None, deltaTime=1., figureSavePath=None, userStatOutputRegisters = None):
         agentsNum, targetNum, targetArgs = self.UsingDataset_readUAVDataset(UAV_Dataset, agentsArgs, deltaTime)
         super().__init__(agentsNum=agentsNum,
                          agentsCls=agentsCls,
@@ -29,12 +30,27 @@ class UAV_MultiTarget_UsingDatasetScene(UAV_MultiTarget_PredictScene):
                          predictorCls=predictorCls,
                          targetNum=targetNum,
                          deltaTime=deltaTime,
-                         figureSavePath=figureSavePath)
+                         figureSavePath=figureSavePath,
+                         userStatOutputRegisters=userStatOutputRegisters)
 
     def _initTargets(self, targetCls, targetArgs, deltaTime):
         self.targets = [targetCls(initPositionState=targetArgs[i]["initPositionState"],
                                   targetTrajectory=targetArgs[i]["targetTrajectory"],
                                   deltaTime=deltaTime) for i in range(self.targetNum)]
+
+    def _initMAS(self, MAS_Cls, agents, MAS_Args, deltaTime):
+        predictorCls = MAS_Args["predictorCls"]
+        del MAS_Args["predictorCls"]
+        self.multiAgentSystem = MAS_Cls(agents=agents,
+                                        masArgs=MAS_Args,
+                                        targetNum=self.targetNum,
+                                        predictorCls=predictorCls,
+                                        statRegisters=[ "recordNumOfTrackingUAVForTarget",
+                                                        "recordDisOfUAVsForVisualize",
+                                                        "recordAlertDisOfUAVsForVisualize",
+                                                        "recordDisBetweenTargetAndUAV",
+                                                        "recordEffectiveTime"],
+                                        deltaTime=deltaTime)
 
     def UsingDataset_readUAVDataset(self, UAV_Dataset, agentsArgs, deltaTime=1.):
         agentsNum = UAV_Dataset["agentNum"]

@@ -12,7 +12,7 @@ from enum import Enum
 from collections import defaultdict
 import random
 import numpy as np
-from EC.EC_Common import ArgsDictValueController
+from optimization.common.ArgsDictValueController import ArgsDictValueController
 
 
 class EC_ChangeDetector_DetectState(Enum):

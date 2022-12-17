@@ -22,6 +22,7 @@ class UAV_Tracking_DatasetGenerator:
                          agentPositionDimension=3, targetPositionDimension=3,
                          agentInitPosRange=None, targetInitPosRange=None,
                          agentInitPosPresetVec=None, targetInitPosPresetVec=None,
+                         targetLinearVelocityRange=None, targetAngularVelocityRange=None,
                          targetMovingWay=None, targetMovingWayVec=None):
         self.agentNum = agentNum
         self.targetNum = targetNum
@@ -32,6 +33,9 @@ class UAV_Tracking_DatasetGenerator:
         self.targetInitPosRange = np.array(targetInitPosRange) if targetInitPosRange is not None else None
         self.agentInitPosPresetVec = np.array(agentInitPosPresetVec) if agentInitPosPresetVec is not None else None
         self.targetInitPosPresetVec = np.array(targetInitPosPresetVec) if targetInitPosPresetVec is not None else None
+        self.targetLinearVelocityRange = np.array(targetLinearVelocityRange) if targetLinearVelocityRange is not None else None
+        self.targetAngularVelocityRange = np.array(targetAngularVelocityRange) if targetAngularVelocityRange is not None else None
+
         self.targetMovingWay = targetMovingWay
         self.targetMovingWayVec = targetMovingWayVec
 
@@ -81,11 +85,13 @@ class UAV_Tracking_DatasetGenerator:
                         agentInitPosRange=None, targetInitPosRange=None,
                         agentInitPosPresetVec=None, targetInitPosPresetVec=None,
                         targetMovingWay=None, targetMovingWayVec=None,
+                        targetLinearVelocityRange=None,targetAngularVelocityRange=None,
                         fileName=None, storePath=None):
         self.setGeneratorArgs(agentNum, targetNum, movingTimes,
                               agentPositionDimension, targetPositionDimension,
                               agentInitPosRange, targetInitPosRange,
                               agentInitPosPresetVec, targetInitPosPresetVec,
+                              targetLinearVelocityRange, targetAngularVelocityRange,
                               targetMovingWay, targetMovingWayVec)
         try:
             if self.checkGeneratorArgs() is False:
@@ -118,8 +124,8 @@ class UAV_Tracking_DatasetGenerator:
         if self.targetMovingWayVec is None:
             targetVec = [UAV_TargetAgent.UAV_TargetAgent(
                 initPositionState=[targetInitPositionVec[i][j] for j in range(self.targetPositionDimension)],
-                linearVelocityRange=[0, 0],
-                angularVelocityRange=[0, 0],
+                linearVelocityRange=self.targetLinearVelocityRange,
+                angularVelocityRange=self.targetAngularVelocityRange,
                 movingFuncRegister=self.targetMovingWay) for i in range(self.targetNum)]
         else:
             targetVec = [UAV_TargetAgent.UAV_TargetAgent(

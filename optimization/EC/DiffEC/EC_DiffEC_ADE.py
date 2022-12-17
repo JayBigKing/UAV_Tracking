@@ -9,7 +9,7 @@
 """
 import numpy as np
 import random
-from EC.DiffEC.EC_DiffEC_Base import EC_DiffEC_Base,EC_CodingType
+from optimization.EC.DiffEC.EC_DiffEC_Base import EC_DiffEC_Base,EC_CodingType
 
 class EC_DiffEC_ADE(EC_DiffEC_Base):
     __DIFF_EC_ADE_DEFAULT_ARGS = {
@@ -57,6 +57,7 @@ class EC_DiffEC_ADE(EC_DiffEC_Base):
         if self.ADE_firstUpdateDiffArg is True:
             self.ADE_firstUpdateDiffArg = False
             self.zeroFitness = np.sum(self.chromosomesFittingValue[:, valDim])
+            self.chromosomeFg = self.ECArgsDictValueController["DiffF1"]
         else:
             F0 = self.ECArgsDictValueController["DiffF0"]
             F1 = self.ECArgsDictValueController["DiffF1"]

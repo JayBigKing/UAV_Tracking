@@ -9,7 +9,7 @@
 """
 import numpy as np
 
-from EC.EC_Common import ArgsDictValueController
+from optimization.common.ArgsDictValueController import ArgsDictValueController
 from MAS.MultiAgentSystem.MAS_WithStat_Base import MAS_WithStat_Base
 from MAS.Agents.UAV_Agent.UAV_Common import calcDistance
 
@@ -20,7 +20,7 @@ class UAV_MAS_Base(MAS_WithStat_Base):
         "upperBoundOfUAVDis": 50.
     }
 
-    def __init__(self, agents, masArgs, terminalHandler=None, statRegisters=None):
+    def __init__(self, agents, masArgs, terminalHandler=None, statRegisters=None, statFuncDict=None):
         self.__UAV_MAS_BASE_DEFAULT_STAT_FUNC_DICT = {
             "recordDisOfUAVs": self._UAV_MAS_Stat_recordDisOfUAVs,
             "recordDisOfUAVsForVisualize": self._UAV_MAS_Stat_recordDisOfUAVsForVisualize,
@@ -29,6 +29,9 @@ class UAV_MAS_Base(MAS_WithStat_Base):
 
         if statRegisters is None:
             statRegisters = [item for item in self.__UAV_MAS_BASE_DEFAULT_STAT_FUNC_DICT]
+
+        if statFuncDict is not None:
+            self.__UAV_MAS_BASE_DEFAULT_STAT_FUNC_DICT.update(statFuncDict)
 
         super().__init__(agents, masArgs, terminalHandler, statRegisters, self.__UAV_MAS_BASE_DEFAULT_STAT_FUNC_DICT)
         self.UAV_MAS_Base_Args = ArgsDictValueController(masArgs,

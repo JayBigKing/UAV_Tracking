@@ -20,7 +20,10 @@ class UAV_PredictTargetScene(UAV_Scene_Base):
     def _initMAS(self, MAS_Cls, agents, MAS_Args, deltaTime):
         predictorCls = MAS_Args["predictorCls"]
         del MAS_Args["predictorCls"]
-        self.multiAgentSystem = MAS_Cls(agents, MAS_Args, predictorCls, deltaTime)
+        self.multiAgentSystem = MAS_Cls(agents=agents,
+                                        MAS_Args=MAS_Args,
+                                        predictorCls=predictorCls,
+                                        deltaTime=deltaTime)
 
     def runningInner(self):
         if self.targetNum == 1:
