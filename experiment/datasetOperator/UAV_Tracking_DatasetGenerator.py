@@ -145,9 +145,9 @@ class UAV_Tracking_DatasetGenerator:
                 targetTrajectories[j]["targetPositionVec"].append(targetVec[j].positionState.tolist())
                 targetTrajectories[j]["targetVelocityVec"].append(targetVec[j].velocity.tolist())
 
-        self.saveToJson(
-            self.packJsonData(agentNum, targetNum, agentInitPositionVec, targetInitPositionVec, targetTrajectories),
-            fileName, storePath)
+        return self.saveToJson(
+                self.packJsonData(agentNum, targetNum, agentInitPositionVec, targetInitPositionVec, targetTrajectories),
+                fileName, storePath)
 
     @staticmethod
     def packJsonData(agentsNum, targetNum, agentInitPositionVec, targetInitPositionVec, targetTrajectories):
@@ -169,6 +169,8 @@ class UAV_Tracking_DatasetGenerator:
         storeFileNameWithPath = "%s%s" % (storePath, fileName)
         with open(storeFileNameWithPath, "w") as f:
             json.dump(jsonPack, f)
+
+        return storeFileNameWithPath
 
 
 # myLogger.myLogger_Init()

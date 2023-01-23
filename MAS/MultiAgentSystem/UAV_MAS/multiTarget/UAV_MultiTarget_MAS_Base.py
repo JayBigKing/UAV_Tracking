@@ -17,7 +17,7 @@ class UAV_MultiTarget_MAS_Base(UAV_MAS_Base):
     __UAV_MULTI_TARGET_MAS_BASE_DEFAULT_ARGS = {
         "linearVelocityConsumeFactor": 1.,
         "angularVelocityConsumeFactor": 1.,
-        "effectiveTimeDisThreshold":20.,
+        "effectiveTimeDisThreshold": 20.,
     }
 
     def __init__(self, agents, masArgs, targetNum, terminalHandler=None, statRegisters=None, deltaTime=1.):
@@ -25,7 +25,11 @@ class UAV_MultiTarget_MAS_Base(UAV_MAS_Base):
             "recordNumOfTrackingUAVForTarget": self.UAV_MultiTargets_MAS_Stat_numOfTrackingUAVForTarget,
             "recordConsumeOfEachUAV": self.UAV_MultiTargets_MAS_Stat_ConsumeOfEachUAV,
             "recordDisBetweenTargetAndUAV": self.UAV_MultiTargets_MAS_Stat_disBetweenTargetAndUAV,
-            "recordEffectiveTime":self.UAV_MultiTargets_MAS_Stat_EffectiveTime
+            "recordEffectiveTime": self.UAV_MultiTargets_MAS_Stat_EffectiveTime,
+            "recordEffectiveTimeForTarget":self.UAV_MultiTargets_MAS_Stat_EffectiveTimeForTarget,
+            "recordTrackTargetID": self.UAV_MultiTargets_MAS_Stat_recordTrackTargetID,
+            "recordDisBetweenCloseTar_UAV": self.UAV_MultiTargets_MAS_Stat_disBetweenCloseTar_UAV
+
         }
 
         if statRegisters is None:
@@ -33,7 +37,8 @@ class UAV_MultiTarget_MAS_Base(UAV_MAS_Base):
                              "recordDisOfUAVsForVisualize",
                              "recordAlertDisOfUAVsForVisualize",
                              self.UAV_MultiTargets_MAS_Stat_disBetweenTargetAndUAV]
-        super().__init__(agents, masArgs, terminalHandler, statRegisters, self.__UAV_MULTI_TARGET_MAS_BASE_DEFAULT_STAT_FUNC_DICT)
+        super().__init__(agents, masArgs, terminalHandler, statRegisters,
+                         self.__UAV_MULTI_TARGET_MAS_BASE_DEFAULT_STAT_FUNC_DICT)
         self.targetNum = targetNum
         self.deltaTime = deltaTime
 
@@ -115,7 +120,8 @@ class UAV_MultiTarget_MAS_Base(UAV_MAS_Base):
     def UAV_MultiTargets_MAS_Stat_ConsumeOfEachUAV(self, **kwargs):
         def calcAgentConsume(agent):
             remainMoving = agent.remainMoving + 1
-            startIndex, _ = agent.getVelocityFromPredictVelocityList(agent.agentArgs["usePredictVelocityLen"] - remainMoving)
+            startIndex, _ = agent.getVelocityFromPredictVelocityList(
+                agent.agentArgs["usePredictVelocityLen"] - remainMoving)
             itemConsume = (agent.predictVelocityList[startIndex] * self.UAV_MultiTargets_MAS_Base_Args[
                 "linearVelocityConsumeFactor"] +
                            abs(agent.predictVelocityList[startIndex + 1]) * self.UAV_MultiTargets_MAS_Base_Args[
@@ -140,11 +146,11 @@ class UAV_MultiTarget_MAS_Base(UAV_MAS_Base):
             trackingTargetIndex = agent.trackingTargetIndex
             return calcDistance(agent.positionState[0: 2], self.realTargetPosition[:, trackingTargetIndex])
 
-
         if hasattr(self, "disBetweenTargetAndUAVStat") is False:
             self.disBetweenTargetAndUAVStat = []
             for item in self.agents:
-                self.disBetweenTargetAndUAVStat.append([np.array([float(self.nowRunningGen), calcDistanceBetweenTargetAndUAV(item)])])
+                self.disBetweenTargetAndUAVStat.append(
+                    [np.array([float(self.nowRunningGen), calcDistanceBetweenTargetAndUAV(item)])])
         else:
             for index, item in enumerate(self.agents):
                 self.disBetweenTargetAndUAVStat[index].append(
@@ -152,6 +158,8 @@ class UAV_MultiTarget_MAS_Base(UAV_MAS_Base):
 
         if self.UAV_MultiTargets_MAS_Stat_EffectiveTime in self.statFuncReg:
             self.UAV_MultiTargets_MAS_Stat_EffectiveTime(run=True)
+        if self.UAV_MultiTargets_MAS_Stat_EffectiveTimeForTarget in self.statFuncReg:
+            self.UAV_MultiTargets_MAS_Stat_EffectiveTimeForTarget(run=True)
 
     def UAV_MultiTargets_MAS_Stat_EffectiveTime(self, **kwargs):
         if kwargs.get("run"):
@@ -171,3 +179,62 @@ class UAV_MultiTarget_MAS_Base(UAV_MAS_Base):
                         if self.__effectiveTimeFlag[index] is True:
                             self.__effectiveTimeFlag[index] = False
                             self.effectiveTimeStat[index].append(self.__effectiveTimeMiddleRecode[index])
+
+    def UAV_MultiTargets_MAS_Stat_EffectiveTimeForTarget(self, **kwargs):
+        if kwargs.get("run"):
+            if hasattr(self, "effectiveTimeForTargetStat") is False:
+                self.effectiveTimeForTargetStat = [[] for item in range(self.targetNum)]
+                self.effectivePointForTargetStat = [[] for item in range(self.targetNum)]
+                self.__effectiveTimeMiddleRecodeForTarget = [0. for item in range(self.targetNum)]
+                self.__effectiveTimeFlagForTarget = [False for item in range(self.targetNum)]
+            else:
+                for index in range(self.targetNum):
+                    self.effectivePointForTargetStat[index].append(0)
+
+                haveCalcTargetIndexSet = set()
+                for index, item in enumerate(self.disBetweenTargetAndUAVStat):
+                    trackingTargetIndex = int(self.agents[index].trackingTargetIndex)
+                    if trackingTargetIndex not in haveCalcTargetIndexSet:
+                        haveCalcTargetIndexSet.add(trackingTargetIndex)
+                        if item[-1][1] <= self.__UAV_MULTI_TARGET_MAS_BASE_DEFAULT_ARGS["effectiveTimeDisThreshold"]:
+                            self.effectivePointForTargetStat[trackingTargetIndex][-1] = 1
+                            if self.__effectiveTimeFlagForTarget[trackingTargetIndex] is False:
+                                self.__effectiveTimeFlagForTarget[trackingTargetIndex] = True
+                                self.__effectiveTimeMiddleRecodeForTarget[trackingTargetIndex] = self.deltaTime
+                            else:
+                                self.__effectiveTimeMiddleRecodeForTarget[trackingTargetIndex] += self.deltaTime
+                        else:
+                            if self.__effectiveTimeFlagForTarget[trackingTargetIndex] is True:
+                                self.__effectiveTimeFlagForTarget[trackingTargetIndex] = False
+                                self.effectiveTimeForTargetStat[trackingTargetIndex].append(
+                                    self.__effectiveTimeMiddleRecodeForTarget[trackingTargetIndex])
+
+    """
+    @brief: recode each uav's track target ID
+    """
+
+    def UAV_MultiTargets_MAS_Stat_recordTrackTargetID(self, **kwargs):
+        if hasattr(self, 'trackTargetIDStat') is False:
+            self.trackTargetIDStat = [[] for item in self.agents]
+
+        for index, item in enumerate(self.agents):
+            self.trackTargetIDStat[index].append([float(self.nowRunningGen), item.trackingTargetIndex])
+
+    """
+    @brief: record the distance between closest target tracked and uav
+    """
+
+    def UAV_MultiTargets_MAS_Stat_disBetweenCloseTar_UAV(self, **kwargs):
+        def calcDistanceBetweenCloseTargetAndUAV(agent):
+            return min([calcDistance(agent.positionState[0: 2], self.realTargetPosition[:, index]) for index in
+                        range(self.targetNum)])
+
+        if hasattr(self, "disBetweenCloseTarUAVStat") is False:
+            self.disBetweenCloseTarUAVStat = []
+            for item in self.agents:
+                self.disBetweenCloseTarUAVStat.append(
+                    [np.array([float(self.nowRunningGen), calcDistanceBetweenCloseTargetAndUAV(item)])])
+        else:
+            for index, item in enumerate(self.agents):
+                self.disBetweenCloseTarUAVStat[index].append(
+                    np.array([float(self.nowRunningGen), calcDistanceBetweenCloseTargetAndUAV(item)]))

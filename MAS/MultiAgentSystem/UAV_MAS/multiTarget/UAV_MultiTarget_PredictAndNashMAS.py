@@ -9,6 +9,7 @@
 """
 import numpy as np
 from optimization.common.ArgsDictValueController import ArgsDictValueController
+from MAS.MultiAgentSystem.MAS_MultiThread_Base import MAS_MultiThread_Base
 from MAS.MultiAgentSystem.UAV_MAS.multiTarget.UAV_MultiTarget_PredictMAS import UAV_MultiTarget_PredictMAS
 
 class UAV_MultiTarget_PredictAndNashMAS(UAV_MultiTarget_PredictMAS):
@@ -33,6 +34,21 @@ class UAV_MultiTarget_PredictAndNashMAS(UAV_MultiTarget_PredictMAS):
     def initShouldContinueOptimizationVar(self, terminalHandler):
         super().initShouldContinueOptimizationVar(terminalHandler)
         self.firstCommunicationFlag = True
+
+    def optimization(self):
+        self.firstNashOptimizationFlag = True
+        super().optimization()
+
+
+    def optimizationInner(self):
+        self.communication()
+        if self.firstNashOptimizationFlag is True:
+            for agent in self.agents:
+                agent.optimization(init=True)
+            self.firstNashOptimizationFlag = False
+        else:
+            for agent in self.agents:
+                agent.optimization()
 
     def communication(self):
         if self.firstCommunicationFlag is True:

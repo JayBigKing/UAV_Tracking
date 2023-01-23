@@ -39,12 +39,14 @@ class PSO_Base:
         self.positionMinConstraint = positionMinConstraint
         self.PSOArgsDictValueController = ArgsDictValueController(PSOArgs, self.__DEFAULT_PSO_BASE_ARGS)
         if velocityMaxConstraint is None:
-            self.velocityMaxConstraint = [item * self.PSOArgsDictValueController["velocityFactor"] for item in self.positionMaxConstraint]
+            self.velocityMaxConstraint = [item * self.PSOArgsDictValueController["velocityFactor"] for item in
+                                          self.positionMaxConstraint]
         else:
             self.velocityMaxConstraint = velocityMaxConstraint
 
         if velocityMinConstraint is None:
-            self.velocityMinConstraint = [item * self.PSOArgsDictValueController["velocityFactor"] for item in self.positionMinConstraint]
+            self.velocityMinConstraint = [item * self.PSOArgsDictValueController["velocityFactor"] for item in
+                                          self.positionMinConstraint]
         else:
             self.velocityMinConstraint = velocityMinConstraint
 
@@ -77,6 +79,10 @@ class PSO_Base:
         self.firstRun = True
 
     def particlesInit(self):
+        for i in range(self.Np):
+            self.particlesFittingValue[i][self.PERSON_NOW_FITNESS_INDEX], self.particlesFittingValue[i][
+                self.PERSON_BEST_FITNESS_INDEX] = 0., 0
+
         for i in range(0, self.Np):
             for j in range(0, self.dimNum):
                 self.particlePositions[j, i] = self.positionMinConstraint[
@@ -104,7 +110,8 @@ class PSO_Base:
             self.optimizeInner()
 
         return np.array(self.globalBestParticlePosition[:, self.BEST_IN_ALL_GEN_DIM_INDEX]), \
-               self.globalBestAimFuncValue[self.BEST_IN_ALL_GEN_DIM_INDEX]
+               self.globalBestAimFuncValue[self.BEST_IN_ALL_GEN_DIM_INDEX], \
+               self.globalBestFittingValue[self.BEST_IN_ALL_GEN_DIM_INDEX]
 
     def optimizeInner(self):
         self.clearBestChromosome(self.BEST_IN_NOW_GEN_DIM_INDEX)
@@ -120,8 +127,11 @@ class PSO_Base:
                 self.particleVelocities[j, i] = w * self.particleVelocities[j, i] + \
                                                 c1 * random.random() * (self.personBestParticlePositions[j, i] -
                                                                         self.particlePositions[j, i]) + \
-                                                c2 * random.random() * (self.globalBestParticlePosition[j, self.BEST_IN_ALL_GEN_DIM_INDEX] -self.particlePositions[j, i])
-                self.particlePositions[j, i] = self.limitParticleValue(self.particlePositions[j, i] + self.particleVelocities[j, i], j)
+                                                c2 * random.random() * (self.globalBestParticlePosition[
+                                                                            j, self.BEST_IN_ALL_GEN_DIM_INDEX] -
+                                                                        self.particlePositions[j, i])
+                self.particlePositions[j, i] = self.limitParticleValue(
+                    self.particlePositions[j, i] + self.particleVelocities[j, i], j)
 
     def fitting(self):
         for i in range(0, self.Np):
@@ -146,27 +156,32 @@ class PSO_Base:
             self.personBestParticlePositions[:, particleIndex] = np.array(
                 self.particlePositions[:, particleIndex])
 
-
             if self.cmpFitting(self.particlesFittingValue[particleIndex, self.PERSON_BEST_FITNESS_INDEX],
                                self.globalBestFittingValue[self.BEST_IN_NOW_GEN_DIM_INDEX]) > 0:
-                self.globalBestFittingValue[self.BEST_IN_NOW_GEN_DIM_INDEX] = self.particlesFittingValue[particleIndex, self.PERSON_BEST_FITNESS_INDEX]
-                self.globalBestAimFuncValue[self.BEST_IN_NOW_GEN_DIM_INDEX] = self.particlesAimFuncValue[particleIndex, self.PERSON_BEST_FITNESS_INDEX]
+                self.globalBestFittingValue[self.BEST_IN_NOW_GEN_DIM_INDEX] = self.particlesFittingValue[
+                    particleIndex, self.PERSON_BEST_FITNESS_INDEX]
+                self.globalBestAimFuncValue[self.BEST_IN_NOW_GEN_DIM_INDEX] = self.particlesAimFuncValue[
+                    particleIndex, self.PERSON_BEST_FITNESS_INDEX]
                 self.globalBestParticlePosition[:, self.BEST_IN_NOW_GEN_DIM_INDEX] = np.array(
                     self.particlePositions[:, particleIndex])
 
                 if self.cmpFitting(self.globalBestFittingValue[self.BEST_IN_NOW_GEN_DIM_INDEX],
                                    self.globalBestFittingValue[self.BEST_IN_ALL_GEN_DIM_INDEX]) > 0:
-                    self.globalBestFittingValue[self.BEST_IN_ALL_GEN_DIM_INDEX],self.globalBestAimFuncValue[self.BEST_IN_ALL_GEN_DIM_INDEX]  = self.globalBestFittingValue[self.BEST_IN_NOW_GEN_DIM_INDEX],self.globalBestAimFuncValue[self.BEST_IN_NOW_GEN_DIM_INDEX]
-                    self.globalBestParticlePosition[:, self.BEST_IN_ALL_GEN_DIM_INDEX] = np.array(self.globalBestParticlePosition[:, self.BEST_IN_NOW_GEN_DIM_INDEX])
-
+                    self.globalBestFittingValue[self.BEST_IN_ALL_GEN_DIM_INDEX], self.globalBestAimFuncValue[
+                        self.BEST_IN_ALL_GEN_DIM_INDEX] = self.globalBestFittingValue[self.BEST_IN_NOW_GEN_DIM_INDEX], \
+                                                          self.globalBestAimFuncValue[self.BEST_IN_NOW_GEN_DIM_INDEX]
+                    self.globalBestParticlePosition[:, self.BEST_IN_ALL_GEN_DIM_INDEX] = np.array(
+                        self.globalBestParticlePosition[:, self.BEST_IN_NOW_GEN_DIM_INDEX])
 
     def cmpFitting(self, val1, val2):
         return (val1 - val2)
 
     def shouldContinue(self, otherTerminalHandler):
         shouldContinueFlag, self._nowEpochTime = ocf.shouldContinue(nowEpochTime=self._nowEpochTime,
-                                                                    bestFittingValue=self.globalBestFittingValue[self.BEST_IN_ALL_GEN_DIM_INDEX],
-                                                                    bestAimFuncValue=self.globalBestAimFuncValue[self.BEST_IN_ALL_GEN_DIM_INDEX],
+                                                                    bestFittingValue=self.globalBestFittingValue[
+                                                                        self.BEST_IN_ALL_GEN_DIM_INDEX],
+                                                                    bestAimFuncValue=self.globalBestAimFuncValue[
+                                                                        self.BEST_IN_ALL_GEN_DIM_INDEX],
                                                                     needEpochTimes=self.needEpochTimes,
                                                                     otherTerminalHandler=otherTerminalHandler)
         return shouldContinueFlag

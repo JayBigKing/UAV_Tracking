@@ -175,7 +175,7 @@ class EC_Base:
     evolution computation process functions below
     '''
 
-    def optimize(self):
+    def optimize(self, **kwargs):
         if self.firstRun == True:
             self.chromosomeInit()
             # self.bestChromosome = np.zeros((self.dimNum, 2))
@@ -186,7 +186,8 @@ class EC_Base:
             self.optimizeInner()
 
         return np.array(self.bestChromosome[:, self.BEST_IN_ALL_GEN_DIM_INDEX]), \
-               self.bestChromosomesAimFuncValue[self.BEST_IN_ALL_GEN_DIM_INDEX]
+               self.bestChromosomesAimFuncValue[self.BEST_IN_ALL_GEN_DIM_INDEX], \
+               self.bestChromosomesFittingValue[self.BEST_IN_ALL_GEN_DIM_INDEX]
 
     def optimizeInner(self):
         self.clearBestChromosome(self.BEST_IN_NOW_GEN_DIM_INDEX)

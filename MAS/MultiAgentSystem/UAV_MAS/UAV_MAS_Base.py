@@ -25,6 +25,7 @@ class UAV_MAS_Base(MAS_WithStat_Base):
             "recordDisOfUAVs": self._UAV_MAS_Stat_recordDisOfUAVs,
             "recordDisOfUAVsForVisualize": self._UAV_MAS_Stat_recordDisOfUAVsForVisualize,
             "recordAlertDisOfUAVsForVisualize": self._UAV_MAS_Stat_recordAlertDisOfUAVsForVisualize,
+            "recordFitness":self._UAV_MAS_Stat_recordFitness
         }
 
         if statRegisters is None:
@@ -180,3 +181,19 @@ class UAV_MAS_Base(MAS_WithStat_Base):
         if self.UAVAlertDisVisualizeStat.get("upperThanUpperBound") is not None:
             self.UAVAlertDisVisualizeStat["upperThanUpperBound"].append(
                 np.array([float(self.nowRunningGen), 1. if upperThanUpperBoundFlag is True else 0.]))
+
+
+    """
+    @brief: recode each epoch the avg agent's fitness 
+    """
+    def _UAV_MAS_Stat_recordFitness(self, **kwargs):
+        if hasattr(self, 'fitnessStat') is False:
+            self.fitnessStat = []
+
+        self.fitnessStat.append([float(self.nowRunningGen), np.average([item.optimizationResult[2] for item in self.agents])])
+        # print('fitness: %f' % self.fitnessStat[-1][1])
+
+
+
+
+

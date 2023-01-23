@@ -91,9 +91,9 @@ class UAV_Agent(Agent_UAV_Base):
         else:
             return targetPosition
 
-    def optimization(self):
+    def optimization(self, **kwargs):
         if self.remainMoving == 0:
-            super().optimization()
+            super().optimization(**kwargs)
             self.predictVelocityList = self.optimizationResult[0]
             # self.remainMoving = self.agentArgs["usePredictVelocityLen"]
         for item in self.statFuncReg:

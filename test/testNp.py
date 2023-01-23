@@ -130,6 +130,10 @@ def test16():
     middleR = rFitnessList[middleRIndex]
     print('bestR:{0} \r\n badR:{1} \r\n middleR:{2}'.format(bestR, badR, middleR))
 
+def test17():
+    l0 = [[[0, 1], [3, 6]], [[-0, -1], [-3, -6]]]
+    print(l0[0])
+
 def main():
     # test1()
     # test2()
@@ -145,8 +149,9 @@ def main():
     # test11()
     # test13()
     # test14()
-    test15()
+    # test15()
     # test16()
+    test17()
 
 
 if __name__ == "__main__":

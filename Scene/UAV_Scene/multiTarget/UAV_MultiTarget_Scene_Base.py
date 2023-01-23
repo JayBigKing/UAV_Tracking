@@ -17,9 +17,22 @@ from Scene.UAV_Scene.UAV_Scene_Base import UAV_Scene_Base
 
 class UAV_MultiTarget_Scene_Base(UAV_Scene_Base):
     DIS_BETWEEN_TARGET_AGENT_RANGE_LIST = [[0., 10.], [10., 20.], [20., 30.], [30., 40.]]
+    SCENE_AND_MAS_RECORD_MAP = {
+        "UAV_MULTI_TARGET_SCENE_BASE_DIS_BETWEEN_TARGET_AND_UAV_STORE":"recordDisBetweenTargetAndUAV",
+        "UAV_MULTI_TARGET_SCENE_BASE_AVG_DIS_STORE":"recordDisBetweenTargetAndUAV",
+        "UAV_MULTI_TARGET_SCENE_BASE_AVG_DIS_STABILITY_STORE":"recordDisBetweenTargetAndUAV",
+        "UAV_MULTI_TARGET_SCENE_BASE_TARGET_TRACKED_NUM_VARIANCE_STORE":"recordNumOfTrackingUAVForTarget",
+        "UAV_MULTI_TARGET_SCENE_BASE_EFFECTIVE_TIME_STORE":"recordEffectiveTime",
+        "UAV_MULTI_TARGET_SCENE_BASE_EFFECTIVE_TIME_FOR_TARGET_STORE":"recordEffectiveTimeForTarget",
+        "UAV_MULTI_TARGET_SCENE_BASE_UAVAlertDisStore":"recordAlertDisOfUAVsForVisualize",
+        "UAV_MULTI_TARGET_SCENE_BASE_UAVFitnessStore":"recordFitness",
+        "UAV_MULTI_TARGET_SCENE_BASE_TRACK_TARGET_ID_STORE":"recordTrackTargetID",
+        "UAV_MULTI_TARGET_SCENE_BASE_AVG_CLOSE_DIS_STORE":"recordDisBetweenCloseTar_UAV"
+    }
+    DEFAULT_MAS_RECORD_REG = ["recordDisOfUAVsForVisualize", "recordNumOfTrackingUAVForTarget", "recordAlertDisOfUAVsForVisualize", "recordDisBetweenTargetAndUAV"]
     def __init__(self, agentsNum, agentsCls, agentsArgs, optimizerCls, optimizerArgs, targetCls, targetArgs, MAS_Cls,
                  MAS_Args, needRunningTime, targetNum=1, deltaTime=1., figureSavePath=None,
-                 userStatOutputRegisters=None):
+                 userStatOutputRegisters=None, sceneArgs = None):
         self.__UAV_MULTI_TARGET_SCENE_BASE_STAT_OUTPUT_DICT = {
             "UAV_MULTI_TARGET_SCENE_BASE_TARGET_TRACKED_NUM_VISUALIZE":self.UAV_MULTITARGET_SCENE_BASE_TARGET_TRACKED_NUM_VISUALIZE,
             "UAV_MULTI_TARGET_SCENE_BASE_UAV_CONSUME_VISUALIZE":self.UAV_MULTITARGET_SCENE_BASE_UAV_CONSUME_VISUALIZE,
@@ -29,6 +42,10 @@ class UAV_MultiTarget_Scene_Base(UAV_Scene_Base):
             "UAV_MULTI_TARGET_SCENE_BASE_AVG_DIS_STABILITY_STORE":self.UAV_MULTITARGET_SCENE_BASE_AVG_DIS_STABILITY_STORE,
             "UAV_MULTI_TARGET_SCENE_BASE_TARGET_TRACKED_NUM_VARIANCE_STORE":self.UAV_MULTITARGET_SCENE_BASE_TARGET_TRACKED_NUM_VARIANCE_STORE,
             "UAV_MULTI_TARGET_SCENE_BASE_EFFECTIVE_TIME_STORE":self.UAV_MULTITARGET_SCENE_BASE_EFFECTIVE_TIME_STORE,
+            "UAV_MULTI_TARGET_SCENE_BASE_EFFECTIVE_TIME_FOR_TARGET_STORE":self.UAV_MULTITARGET_SCENE_BASE_EFFECTIVE_TIME_FOR_TARGET_STORE,
+            "UAV_MULTI_TARGET_SCENE_BASE_TRACK_TARGET_ID_STORE":self.UAV_MULTITARGET_SCENE_BASE_TRACK_TARGET_ID_STORE,
+            "UAV_MULTI_TARGET_SCENE_BASE_AVG_CLOSE_DIS_STORE":self.UAV_MULTITARGET_SCENE_BASE_AVG_CLOSE_DIS_STORE
+
         }
 
         statOutputRegisters = [self.UAV_MULTITARGET_SCENE_BASE_TARGET_TRACKED_NUM_VISUALIZE,
@@ -40,7 +57,7 @@ class UAV_MultiTarget_Scene_Base(UAV_Scene_Base):
             statOutputRegisters.extend(userStatOutputRegisters)
         super().__init__(agentsNum, agentsCls, agentsArgs, optimizerCls, optimizerArgs, targetCls, targetArgs, MAS_Cls,
                          MAS_Args, needRunningTime, targetNum, deltaTime, figureSavePath, statOutputRegisters,
-                         self.__UAV_MULTI_TARGET_SCENE_BASE_STAT_OUTPUT_DICT)
+                         self.__UAV_MULTI_TARGET_SCENE_BASE_STAT_OUTPUT_DICT, sceneArgs=sceneArgs)
 
     def _initAgents(self, agentsCls, agentsArgs, optimizerCls, optimizerArgs, deltaTime):
         if isinstance(agentsArgs["initArgs"], list) is False:
@@ -207,7 +224,7 @@ class UAV_MultiTarget_Scene_Base(UAV_Scene_Base):
 
     def UAV_MULTITARGET_SCENE_BASE_AVG_DIS_STABILITY_STORE(self):
         avgDisList = self.__UAV_MULTITARGET_SCENE_BASE_AVG_DIS_CALC_INNER()
-        nameList = ["stability of avg distance between uav and target "]
+        nameList = ["stability of avg distance between uav and target"]
 
         if avgDisList == [] or len(avgDisList) == 1:
             return
@@ -254,6 +271,77 @@ class UAV_MultiTarget_Scene_Base(UAV_Scene_Base):
 
             else:
                 raise NotImplementedError("There is no variable named effectiveTimeStat needed"
+                                          "when call function %s" % (inspect.stack()[0][3]))
+        except NotImplementedError as e:
+            myLogger.myLogger_Logger().warn(repr(e))
+
+    def UAV_MULTITARGET_SCENE_BASE_EFFECTIVE_TIME_FOR_TARGET_STORE(self):
+        scattersList = []
+        nameList = ["effectively track ratio", "effectivePointList", "avg effective time for target"]
+        try:
+            if hasattr(self.multiAgentSystem, "effectiveTimeForTargetStat"):
+                effectiveTimeForTargetStat = self.multiAgentSystem.effectiveTimeForTargetStat
+                effectivePointForTargetStat = self.multiAgentSystem.effectivePointForTargetStat
+                effectiveTimeList = []
+                effectivePointList = []
+                for item in effectiveTimeForTargetStat:
+                    effectiveTimeList.extend(item)
+                for item in effectivePointForTargetStat:
+                    effectivePointList.extend(item)
+
+                if effectivePointList != []:
+                    scattersList.append([float(sum(effectivePointList)) / float(len(effectivePointList))])
+                    scattersList.append(effectivePointList)
+                else:
+                    scattersList.append([0.])
+                    scattersList.append([])
+
+                if effectiveTimeList != []:
+                    scattersList.append([np.average(effectiveTimeList)])
+                else:
+                    scattersList.append([0.])
+
+                for i in range(len(nameList)):
+                    self.UAV_SCENE_BASE_SimpleStoreStatData(scattersList[i], [nameList[i]])
+
+            else:
+                raise NotImplementedError("There is no variable named effectiveTimeForTargetStat needed"
+                                          "when call function %s" % (inspect.stack()[0][3]))
+        except NotImplementedError as e:
+            myLogger.myLogger_Logger().warn(repr(e))
+
+    def UAV_MULTITARGET_SCENE_BASE_TRACK_TARGET_ID_STORE(self):
+        nameListFmt = "uav {:d} track target ID"
+        nameList = []
+        try:
+            if hasattr(self.multiAgentSystem, "trackTargetIDStat"):
+                for index, item in enumerate(self.multiAgentSystem.trackTargetIDStat):
+                    nameList = [nameListFmt.format(index)]
+                    scattersList = [item2[1] for item2 in item]
+
+                    self.UAV_SCENE_BASE_SimpleStoreStatData(scattersList, nameList)
+
+            else:
+                raise NotImplementedError("There is no variable named trackTargetIDStat needed"
+                                          "when call function %s" % (inspect.stack()[0][3]))
+        except NotImplementedError as e:
+            myLogger.myLogger_Logger().warn(repr(e))
+
+    def UAV_MULTITARGET_SCENE_BASE_AVG_CLOSE_DIS_STORE(self):
+        scattersList = []
+        nameList = ["avg distance between uav and closest target"]
+        try:
+            if hasattr(self.multiAgentSystem, "disBetweenCloseTarUAVStat"):
+                disBetweenCloseTarUAVStat = self.multiAgentSystem.disBetweenCloseTarUAVStat
+
+                for j in range(len(disBetweenCloseTarUAVStat[0])):
+                    scattersList.append(np.average([item[j][1] for item in disBetweenCloseTarUAVStat]))
+
+
+                self.UAV_SCENE_BASE_SimpleStoreStatData(scattersList, nameList)
+
+            else:
+                raise NotImplementedError("There is no variable named disBetweenCloseTarUAVStat needed"
                                           "when call function %s" % (inspect.stack()[0][3]))
         except NotImplementedError as e:
             myLogger.myLogger_Logger().warn(repr(e))

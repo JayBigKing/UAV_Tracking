@@ -8,6 +8,7 @@
 @Time    : 2022/12/15 18:53
 """
 from optimization.PSO.PSO_Base import PSO_Base
+import optimization.common.optimizationCommonFunctions as ocf
 
 
 class PSO_Tracking(PSO_Base):
@@ -30,10 +31,11 @@ class PSO_Tracking(PSO_Base):
         self.ECArgsDictValueController = self.PSOArgsDictValueController
         self.ECDynOptHyperMutation_ECArgsDictValueController = {}
 
-    def optimize(self):
-        self.firstRun = True
-        self.clearBestChromosome(self.BEST_IN_ALL_GEN_DIM_INDEX)
-        self.clearBestChromosome(self.BEST_IN_NOW_GEN_DIM_INDEX)
+    def optimize(self, **kwargs):
+        if kwargs.get("init"):
+            self.firstRun = True
+            self.clearBestChromosome(self.BEST_IN_ALL_GEN_DIM_INDEX)
+            self.clearBestChromosome(self.BEST_IN_NOW_GEN_DIM_INDEX)
         return self.optimization()
 
     def shouldContinue(self, otherTerminalHandler=None):
@@ -47,3 +49,16 @@ class PSO_Tracking(PSO_Base):
             return True
         else:
             return False
+
+    def fitting(self):
+        # 因为是动态的，所以最优的fitting是会变的，所以先fitting最优的那个
+        self.globalBestFittingValue[self.BEST_IN_ALL_GEN_DIM_INDEX], self.globalBestAimFuncValue[
+            self.BEST_IN_ALL_GEN_DIM_INDEX] = ocf.fittingOne(
+                solution=self.globalBestParticlePosition[:, self.BEST_IN_ALL_GEN_DIM_INDEX],
+                evalVars=self.evalVars,
+                optimizeWay=self.optimizeWay,
+                fittingMinDenominator=
+                self.PSOArgsDictValueController[
+                    "fittingMinDenominator"])
+
+        super().fitting()

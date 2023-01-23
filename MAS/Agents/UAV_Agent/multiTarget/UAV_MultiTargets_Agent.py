@@ -17,6 +17,9 @@ class UAV_MultiTarget_Agent(UAV_Agent):
     __UAV_MULTI_TARGET_AGENT_DEFAULT_ARGS = {
         "JBalanceFactor": .9,
         "deltaDisForMinDisThreshold": 10.,
+        "changeTargetMaxDisThreshold": 50.,
+        "changeTargetMaxPenalty":.2
+
     }
 
     def __init__(self, initPositionState, linearVelocityRange, angularVelocityRange, optimizerCls, agentArgs,
@@ -72,6 +75,7 @@ class UAV_MultiTarget_Agent(UAV_Agent):
 
     def moving(self):
         self.trackingTargetIndex = int(self.predictVelocityList[0])
+        self.lastTrackingTargetIndex = self.trackingTargetIndex
         startIndex, endIndex = self.getVelocityFromPredictVelocityList(
             self.agentArgs["usePredictVelocityLen"] - self.remainMoving)
         self.positionState = calcMovingForUAV(self.positionState, self.predictVelocityList[startIndex: endIndex],
@@ -88,7 +92,8 @@ class UAV_MultiTarget_Agent(UAV_Agent):
         return self.agentArgs["JBalanceFactor"] * self.evalVars_JBalance(chromosome, self.predictVelocityLen) + \
                self.agentArgs["JTaskFactor"] * self.evalVars_JTask(chromosome, self.predictVelocityLen) + \
                self.agentArgs["JConFactor"] * self.evalVars_JConsume(chromosome, self.predictVelocityLen) + \
-               self.agentArgs["JColFactor"] * self.evalVars_JCollision(chromosome, self.predictVelocityLen)
+               self.agentArgs["JColFactor"] * self.evalVars_JCollision(chromosome, self.predictVelocityLen) + \
+               self.evalVars_PChangeTarget(chromosome, self.predictVelocityLen)
 
     def getVelocityFromPredictVelocityList(self, velocityIndex):
         velocityLen = self.velocity.size
@@ -134,7 +139,7 @@ class UAV_MultiTarget_Agent(UAV_Agent):
 
     def evalVars_JCollision(self, chromosome, *args):
         def JCollisionMeasureFunc(distanceFromItem):
-            return 0.5 - np.tanh(8 * (distanceFromItem - self.agentArgs["minDistanceThreshold"] - 0.5 * self.agentArgs[
+            return .5 - 0.5 * np.tanh(8 * (distanceFromItem - self.agentArgs["minDistanceThreshold"] - 0.5 * self.agentArgs[
                 "deltaDisForMinDisThreshold"]) / self.agentArgs["deltaDisForMinDisThreshold"])
 
         predictVelocityLen = args[0]
@@ -162,3 +167,28 @@ class UAV_MultiTarget_Agent(UAV_Agent):
         JCollisionVal = np.average(np.array(JCollisionList))
 
         return JCollisionVal
+
+    def evalVars_PChangeTarget(self, chromosome, *args):
+        def PChangeTargetMeasureFunc(distanceFromItem):
+            return np.tanh(4. * (distanceFromItem / self.agentArgs["changeTargetMaxDisThreshold"]))
+
+
+        if hasattr(self, "lastTrackingTargetIndex") is False:
+            return 0.
+
+        if self.lastTrackingTargetIndex == self.testTrackingTargetIndex:
+            return 0.
+        lastTargetPosition = self.targetPositionList[self.lastTrackingTargetIndex][0]
+        lastDisFromTarget = np.square(self.positionState[0] - lastTargetPosition[0]) + np.square(
+            self.positionState[1] - lastTargetPosition[1])
+
+        nowTargetPosition = self.targetPositionList[self.testTrackingTargetIndex][0]
+        nowDisFromTarget = np.square(self.positionState[0] - nowTargetPosition[0]) + np.square(
+            self.positionState[1] - nowTargetPosition[1])
+
+        if nowDisFromTarget > lastDisFromTarget:
+            return self.agentArgs["changeTargetMaxPenalty"]
+        else:
+            return 0.
+
+        # return self.agentArgs["changeTargetMaxPenalty"] * PChangeTargetMeasureFunc(abs(lastDisFromTarget - nowDisFromTarget))

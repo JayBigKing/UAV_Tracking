@@ -72,8 +72,12 @@ def test4():
     print(t.hh)
     print(t.uu)
 
+def test5():
+    print(TestShareFunc.shareFunc.__name__)
+
+
 def main():
-    test4()
+    test5()
 
 if __name__ == '__main__':
     main()

@@ -8,6 +8,7 @@
 @Time    : 2022/10/13 20:54
 """
 import numpy as np
+import time
 from Jay_Tool.visualizeTool.CoorDiagram import  CoorDiagram
 from MAS.Agents.UAV_Agent.UAV_TargetAgent import UAV_TargetAgent
 
@@ -19,9 +20,10 @@ def test1():
 
     cd = CoorDiagram()
     scattersList = [target0.coordinateVector]
-    cd.drawManyScattersInOnePlane(scattersList, ifSaveFig=True, nameList=["hhh"])
+    cd.drawManyScattersInOnePlane(scattersList, ifSaveFig=True, nameList=["hhh"], titleName="testTarget")
 
 def main():
+    test1()
     test1()
 
 if __name__ == "__main__":

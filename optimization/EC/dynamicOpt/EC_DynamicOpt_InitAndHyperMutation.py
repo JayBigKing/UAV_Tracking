@@ -20,4 +20,6 @@ class EC_DynamicOpt_InitAndHyperMutation(EC_DynamicOpt_HyperMutation):
     def adaptToEnvironmentWhenChange(self):
         super().adaptToEnvironmentWhenChange()
         self.chromosomeInit()
+        self.clearBestChromosome(self.BEST_IN_NOW_GEN_DIM_INDEX)
         self.fitting(isOffspring=False)
+

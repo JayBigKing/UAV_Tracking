@@ -24,6 +24,20 @@ class UAV_NashMAS(UAV_MAS_Base):
         self.lastAgentOptimizationRes = []
         self.NashMas_Args = ArgsDictValueController(masArgs, self.__NASH_MAS_DEFAULT_ARGS, onlyUseDefaultKey=True)
 
+    def optimization(self):
+        self.firstNashOptimizationFlag = True
+        super().optimization()
+
+    def optimizationInner(self):
+        self.communication()
+        if self.firstNashOptimizationFlag is True:
+            for agent in self.agents:
+                agent.optimization(init=True)
+            self.firstNashOptimizationFlag = False
+        else:
+            for agent in self.agents:
+                agent.optimization()
+
     def communication(self):
         predictVelocityList = [item.predictVelocityList for item in self.agents]
 

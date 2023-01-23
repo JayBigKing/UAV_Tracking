@@ -51,7 +51,7 @@ class MAS_Base:
     def optimizationInner(self):
         self.communication()
         for agent in self.agents:
-            agent.optimization()
+            agent.optimization(init=True)
 
     def updateAgentState(self):
         '''

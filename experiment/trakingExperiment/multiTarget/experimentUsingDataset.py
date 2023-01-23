@@ -19,6 +19,7 @@ from MAS.Agents.UAV_Agent import UAV_Dataset_TargetAgent
 from MAS.Agents.UAV_Agent.multiTarget.UAV_MultiTargets_ProbabilitySelectTargetAgent import \
     UAV_MultiTargets_ProbabilitySelectTargetAgent
 from optimization.EC.dynamicOpt.EC_DynamicOpt_InitAndHyperMutation import EC_DynamicOpt_InitAndHyperMutation
+from optimization.EC.dynamicOpt.EC_DynamicOpt_HMMemory import EC_DynamicOpt_HMMemory
 from optimization.PSO.PSO_Tracking import PSO_Tracking
 from optimization.EC.DiffEC.EC_DiffEC_Tracking_ADE import EC_DiffEC_Tracking_ADE
 from optimization.EC.DiffEC.EC_DiffEC_Tracking_DE import EC_DiffEC_Tracking_DE
@@ -52,8 +53,8 @@ DYN_EC_OPTIMIZATION_COMPUTATION_ARGS = {
     "floatCrossoverAlpha": 0.5,
     "mutationProbability": 0.05,
     "fittingMinDenominator": 0.2,
-    "mutationProbabilityWhenChange": 0.5,
-    "mutationProbabilityWhenNormal": 0.05,
+    "mutationProbabilityWhenChange": 0.6,
+    "mutationProbabilityWhenNormal": 0.1,
     "performanceThreshold": 3,
     "refractoryPeriodLength": 2,
     "borders": [0, 1],
@@ -61,7 +62,7 @@ DYN_EC_OPTIMIZATION_COMPUTATION_ARGS = {
 
 OPTIMIZATION_AND_ARGS_DICT = {
     "dynEC": {
-        "class": EC_DynamicOpt_InitAndHyperMutation,
+        "class": EC_DynamicOpt_HMMemory,
         "computationArgs": DYN_EC_OPTIMIZATION_COMPUTATION_ARGS,
     },
     "ADE": {
@@ -89,7 +90,7 @@ MAS_AND_ARGS_DICT = {
     }
 }
 
-NEED_RUNNING_TIME = 300
+NEED_RUNNING_TIME = 3
 
 
 def generateDataset():
@@ -97,7 +98,7 @@ def generateDataset():
     TARGET_NUM = 2
     AGENT_INIT_POSITION_RANGE = [[10., 20.], [10., 30.], [0., 0.]]
     TARGET_INIT_POSITION_RANGE = [[10., 100.], [10., 100.], [0., 0.]]
-    TARGET_MOVING_WAY = "movingAsSin"
+    TARGET_MOVING_WAY = "randMoving"
 
     datasetGenerator = UAV_Tracking_DatasetOperator.UAV_Tracking_DatasetGenerator()
     datasetGenerator.generateDataset(agentNum=AGENTS_NUM, targetNum=TARGET_NUM,
@@ -132,7 +133,7 @@ def experimentBase(datasetPath, optimizerKey):
         "fittingIsSameThreshold": 1e-4,
         "JTaskFactor": .4,
         "JConFactor": .0,
-        "JColFactor": .4,
+        "JColFactor": .8,
         "JComFactor": 1.,
         "JBalanceFactor": .4,
         "minDistanceThreshold": MIN_DISTANCE_BETWEEN_UAV_THRESHOLD,
@@ -185,25 +186,27 @@ def experimentBase(datasetPath, optimizerKey):
                                  "UAV_MULTI_TARGET_SCENE_BASE_AVG_DIS_STABILITY_STORE",
                                  "UAV_MULTI_TARGET_SCENE_BASE_TARGET_TRACKED_NUM_VARIANCE_STORE",
                                  "UAV_MULTI_TARGET_SCENE_BASE_EFFECTIVE_TIME_STORE",
-                                 "UAV_SCENE_BASE_UAVAlertDisStore",]
+                                 "UAV_MULTI_TARGET_SCENE_BASE_UAVAlertDisStore",
+                                 "UAV_MULTI_TARGET_SCENE_BASE_UAVFitnessStore",
+                                 "UAV_MULTI_TARGET_SCENE_BASE_TRACK_TARGET_ID_STORE",
+                                 "UAV_MULTI_TARGET_SCENE_BASE_AVG_CLOSE_DIS_STORE"]
     )
 
     return uav_scene_base
 
 
-DATASET_PATH = "sinTarget.json"
+DATASET_PATH = "targetTrajectoryDataset/randTarget2.json"
 
 
 @clockTester
 def experiment1Inner(optimizerKey):
     uav_scene_base = experimentBase(DATASET_PATH, optimizerKey)
     uav_scene_base.run()
-    print(r'the optimizerKey is %s' % optimizerKey)
 
 
 @clockTester
 def experiment1():
-    optimizerKey = "DE"
+    optimizerKey = "dynEC"
     experiment1Inner(optimizerKey)
 
 @clockTester

@@ -21,7 +21,7 @@ from dataStatistics.statFuncListGenerator import statFuncListGenerator
 class UAV_Scene_Base(Scene_Base):
     def __init__(self, agentsNum, agentsCls, agentsArgs, optimizerCls, optimizerArgs, targetCls, targetArgs, MAS_Cls,
                  MAS_Args, needRunningTime, targetNum=1, deltaTime=1., figureSavePath=None, statOutputRegisters=None,
-                 statOutputDict=None):
+                 statOutputDict=None, sceneArgs = None):
         self.agentsNum = agentsNum
         self.targetNum = targetNum
         self.deltaTime = deltaTime
@@ -31,7 +31,8 @@ class UAV_Scene_Base(Scene_Base):
             "UAV_SCENE_BASE_UAV_TRAJECTORY_VISUALIZE": self.UAV_SCENE_BASE_UAVTrajectoryVisualize,
             "UAV_SCENE_BASE_UAVDisVisualize": self.UAV_SCENE_BASE_UAVDisVisualize,
             "UAV_SCENE_BASE_UAVAlertDisVisualize": self.UAV_SCENE_BASE_UAVAlertDisVisualize,
-            "UAV_SCENE_BASE_UAVAlertDisStore":self.UAV_SCENE_BASE_UAVAlertDisStore
+            "UAV_MULTI_TARGET_SCENE_BASE_UAVAlertDisStore":self.UAV_SCENE_BASE_UAVAlertDisStore,
+            "UAV_MULTI_TARGET_SCENE_BASE_UAVFitnessStore":self.UAV_SCENE_BASE_UAVFitnessStore
         }
 
         if statOutputDict is not None:
@@ -45,7 +46,7 @@ class UAV_Scene_Base(Scene_Base):
         self._initTargets(targetCls, targetArgs, deltaTime)
         self._initMAS(MAS_Cls, self.agents, MAS_Args, deltaTime)
 
-        super().__init__(self.agents, self.multiAgentSystem, needRunningTime)
+        super().__init__(self.agents, self.multiAgentSystem, needRunningTime, sceneArgs=sceneArgs)
 
     def _initAgents(self, agentsCls, agentsArgs, optimizerCls, optimizerArgs, deltaTime):
         if isinstance(agentsArgs["initArgs"], list) is False:
@@ -98,7 +99,7 @@ class UAV_Scene_Base(Scene_Base):
         self.__csvNameLists = []
         self.__statOutputFuncIsDone = False
         for item in self.statOutputFuncReg:
-            time.sleep(0.5)
+            # time.sleep(0.5)
             item()
         self.__statOutputFuncIsDone = True
         self.UAV_SCENE_BASE_SimpleStoreStatData(None, None)
@@ -210,6 +211,20 @@ class UAV_Scene_Base(Scene_Base):
 
         self.UAV_SCENE_BASE_SimpleStoreStatData([alertPercentage], nameList)
 
+    def UAV_SCENE_BASE_UAVFitnessStore(self):
+        nameList = ["fitness"]
+        try:
+            if hasattr(self.multiAgentSystem, "fitnessStat"):
+                scattersList = [item[1] for item in self.multiAgentSystem.fitnessStat]
+
+                self.UAV_SCENE_BASE_SimpleStoreStatData(scattersList, nameList)
+
+            else:
+                raise NotImplementedError("There is no variable named fitnessStat needed"
+                                          "when call function %s" % (inspect.stack()[0][3]))
+        except NotImplementedError as e:
+            myLogger.myLogger_Logger().warn(repr(e))
+
 
 
     def __UAV_SCENE_BASE_UAVAlertDisCalcInner(self):
@@ -228,8 +243,6 @@ class UAV_Scene_Base(Scene_Base):
                     thersholdStr = item[0]
 
                 return scattersList, nameList, alertPercentage, thersholdStr
-                # self.UAV_SCENE_BASE_SimpleVisualizeTrajectory(scattersList, nameList,
-                #                                               titleName="uav alert distance record")
 
             else:
                 raise NotImplementedError("There is no variable named UAVDisVisualizeStat needed"
