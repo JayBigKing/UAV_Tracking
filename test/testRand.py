@@ -23,8 +23,11 @@ def test4():
     print(np.random.rand(2))
     print(np.random.randn(200))
 
+def test5():
+    print(random.randint(-1, 1))
+
 def main():
-    test4()
+    test5()
 
 if __name__ == '__main__':
     main()

@@ -26,12 +26,12 @@ class UAV_MultiTargets_ProbabilitySelectTargetAgent(UAV_MultiTarget_Agent):
         # 如果没有，就使用默认的
         self.agentArgs.update(newDict=self.__UAV_MULTI_TARGET_PROBABILITY_SELECT_AGENT_DEFAULT_ARGS, onlyAddNotExists=True)
 
-    def optimization(self):
+    def optimization(self, **kwargs):
         if random.random() < self.agentArgs["selectByResProbability"]:
             self.trackLastTarget = True
         else:
             self.trackLastTarget = False
-        super().optimization()
+        super().optimization(**kwargs)
 
     def evalVars(self, chromosome):
         if self.trackLastTarget is True:

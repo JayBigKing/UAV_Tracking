@@ -13,13 +13,14 @@ from MAS.MultiAgentSystem.UAV_MAS.multiTarget.UAV_MultiTarget_PredictMAS import 
 
 
 class UAV_MultiTarget_PredictAndSerialMAS(UAV_MultiTarget_PredictMAS, MAS_SerialBase):
-    def __init__(self, agents, masArgs, targetNum, terminalHandler=None, predictorCls=None, deltaTime=1.):
+    def __init__(self, agents, masArgs, targetNum, terminalHandler=None, predictorCls=None, statRegisters=None, deltaTime=1.):
         UAV_MultiTarget_PredictMAS.__init__(self,
                                             agents=agents,
                                             masArgs=masArgs,
                                             targetNum=targetNum,
                                             terminalHandler=terminalHandler,
                                             predictorCls=predictorCls,
+                                            statRegisters=statRegisters,
                                             deltaTime=deltaTime)
         self.optimizationAgentIndexCount = 0
         self.middleNumOfTrackingUAVForTargetList = []

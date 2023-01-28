@@ -7,9 +7,11 @@
 @Author  : jay.zhu
 @Time    : 2022/10/11 22:58
 """
-from EC.EC_Common import ArgsDictValueController
-from EC.dynamicOpt.EC_DynamicOpt_Base import EC_DynamicOpt_Base
-from EC.dynamicOpt.EC_ChangeDetect import EC_ChangeDetector_PerformanceThresh
+import random
+import numpy as np
+from optimization.common.ArgsDictValueController import ArgsDictValueController
+from optimization.EC.dynamicOpt.EC_DynamicOpt_Base import EC_DynamicOpt_Base
+from optimization.EC.dynamicOpt.EC_ChangeDetect import EC_ChangeDetector_PerformanceThresh
 
 
 class EC_DynamicOpt_HyperMutation(EC_DynamicOpt_Base):
@@ -40,6 +42,38 @@ class EC_DynamicOpt_HyperMutation(EC_DynamicOpt_Base):
         self.ECDynOptHyperMutation_ECArgsDictValueController = ArgsDictValueController(userArgsDict=ECArgs,
                                                                                        defaultArgsDict=self.EC_DYNAMIC_OPT_HYPER_MUTATION_DEFAULT_CHANGE_DETECTOR_REG_DICT,
                                                                                        onlyUseDefaultKey=True)
+
+
+
+    def crossover(self):
+        mutationChromosomes = np.array(self.middleChromosomes)
+        # alpha = self.ECArgsDictValueController["floatCrossoverAlpha"]
+        # alphaRemain = 1. - alpha
+        # for i in range(self.Np):
+        #     r1, r2 = random.sample(range(self.Np), 2)
+        #     for j in range(self.dimNum):
+        #         self.middleChromosomes[j][i] = alpha * mutationChromosomes[j][r2] + \
+        #                                        alphaRemain * mutationChromosomes[j][r1]
+        middleChroIndex = 0
+        for i in range(int(self.Np / 2)):
+            r1, r2 = random.sample(range(self.Np), 2)
+            crossoverPos = random.randint(0, self.dimNum)
+
+            for j in range(0, crossoverPos):
+                self.middleChromosomes[j][middleChroIndex] = mutationChromosomes[j][r2]
+                if middleChroIndex + 1 < self.Np:
+                    self.middleChromosomes[j][middleChroIndex + 1] = mutationChromosomes[j][r1]
+
+            for j in range(crossoverPos, self.dimNum):
+                self.middleChromosomes[j][middleChroIndex] = mutationChromosomes[j][r1]
+                if middleChroIndex + 1 < self.Np:
+                    self.middleChromosomes[j][middleChroIndex + 1] = mutationChromosomes[j][r2]
+
+            middleChroIndex += 2
+
+    def adaptToEnvironmentWhenNormal(self):
+        self.ECArgsDictValueController["mutationProbability"] = self.ECDynOptHyperMutation_ECArgsDictValueController[
+            "mutationProbabilityWhenNormal"]
 
     def adaptToEnvironmentWhenChange(self):
         super().adaptToEnvironmentWhenChange()

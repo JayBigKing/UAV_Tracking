@@ -53,9 +53,31 @@ def test3():
     TestCopyPointer = TestCopy
     print(TestCopyPointer.__name__)
 
+def test4():
+    class TestShareFunc:
+        def __init__(self):
+            self.hh = 0
+            self.uu = 10
+
+        def __getattr__(self, item):
+            print('__getattr__')
+        def  __getattribute__(self, item):
+            if item == "hh":
+                return 100
+            else:
+                return super().__getattribute__(item)
+
+
+    t = TestShareFunc()
+    print(t.hh)
+    print(t.uu)
+
+def test5():
+    print(TestShareFunc.shareFunc.__name__)
+
 
 def main():
-    test3()
+    test5()
 
 if __name__ == '__main__':
     main()

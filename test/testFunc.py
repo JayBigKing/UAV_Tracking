@@ -1,3 +1,5 @@
+from Jay_Tool.EfficiencyTestTool.EfficiencyTestTool import clockTester
+
 def test1Help(*args, **kwargs):
     print("args : %r, \n"
           "kwargs : %r" % (args, kwargs))
@@ -25,8 +27,21 @@ def test4():
     retVal = test4Help(1)
     print(retVal[0])
 
+
+def test5():
+    test5Sum()
+    test5Reduce()
+
+@clockTester
+def test5Sum():
+    print(sum([(i - 5) for i in range(100000)]))
+@clockTester
+def test5Reduce():
+    from functools import reduce
+    print(reduce(lambda a,b: (a-5) + (b - 5), [i for i in range(1, 100000)]))
+
 def main():
-    test4()
+    test5()
 
 if __name__ == "__main__":
     main()

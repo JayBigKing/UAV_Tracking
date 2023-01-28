@@ -9,7 +9,7 @@
 """
 import numpy as np
 from algorithmTool.filterTool.ExtendedKalmanFilter import ExtendedKalmanFilter
-from EC.EC_Common import ArgsDictValueController
+from optimization.common.ArgsDictValueController import ArgsDictValueController
 from MAS.MultiAgentSystem.UAV_MAS.multiTarget.UAV_MultiTarget_MAS_Base import UAV_MultiTarget_MAS_Base
 
 
@@ -23,11 +23,12 @@ class UAV_MultiTarget_PredictMAS(UAV_MultiTarget_MAS_Base):
         ]) ** 2),  # predict state covariance,
         "kalman_R": (np.diag([1.0, 1.0]) ** 2)
     }
-    def __init__(self, agents, masArgs, targetNum, terminalHandler=None, predictorCls=None, deltaTime=1.):
+    def __init__(self, agents, masArgs, targetNum, terminalHandler=None, predictorCls=None, statRegisters=None, deltaTime=1.):
         super().__init__(agents=agents,
                          masArgs=masArgs,
                          targetNum=targetNum,
                          terminalHandler=terminalHandler,
+                         statRegisters=statRegisters,
                          deltaTime=deltaTime)
         self.predictMas_Args = ArgsDictValueController(masArgs, self.__UAV_MULTI_TARGET_PREDICT_MAS_DEFAULT_ARGS)
 

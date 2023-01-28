@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 """
-@Project : uav tracking
-@File    : EC_Common.py
+@Project : UAV_Tracking
+@File    : ArgsDictValueController.py
 @Author  : jay.zhu
-@Time    : 2022/10/11 15:00
+@Time    : 2022/12/15 16:15
 """
-
 from copy import deepcopy
 from collections import defaultdict
+
 class ArgsDictValueController:
     def __init__(self, userArgsDict, defaultArgsDict, onlyUseDefaultKey = False) -> None:
         if isinstance(userArgsDict, defaultdict) is False:
@@ -63,5 +63,4 @@ class ArgsDictValueController:
                     self.userArgsDict[key] = newDict[key]
         else:
             self.userArgsDict.update(newDict)
-
 

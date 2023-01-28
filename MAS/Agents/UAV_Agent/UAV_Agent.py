@@ -9,8 +9,8 @@
 """
 import numpy as np
 from algorithmTool.mathFunction.mathFunction import Jay_sigmoid
-from EC.EC_Common import ArgsDictValueController
-from EC.EC_Base import EC_OtimizeWay
+from optimization.common.optimizationCommonEnum import OptimizationWay
+from optimization.common.ArgsDictValueController import ArgsDictValueController
 from MAS.Agents.UAV_Agent.Agent_UAV_Base import Agent_UAV_Base
 from MAS.Agents.UAV_Agent.UAV_Common import calcMovingForUAV, calcDistance
 
@@ -36,7 +36,7 @@ class UAV_Agent(Agent_UAV_Base):
         self.agentArgs = ArgsDictValueController(agentArgs, self.__UAV_AGENT_DEFAULT_ARGS)
         self.predictVelocityLen = self.agentArgs["predictVelocityLen"]
 
-        optimizerInitArgs["optimizeWay"] = EC_OtimizeWay.MIN
+        optimizerInitArgs["optimizeWay"] = OptimizationWay.MIN
         optimizerInitArgs["maxConstraint"] = []
         optimizerInitArgs["minConstraint"] = []
         optimizerInitArgs["optimizerLearningDimNum"] = optimizerInitArgs["dimNum"] * self.predictVelocityLen
@@ -91,9 +91,9 @@ class UAV_Agent(Agent_UAV_Base):
         else:
             return targetPosition
 
-    def optimization(self):
+    def optimization(self, **kwargs):
         if self.remainMoving == 0:
-            super().optimization()
+            super().optimization(**kwargs)
             self.predictVelocityList = self.optimizationResult[0]
             # self.remainMoving = self.agentArgs["usePredictVelocityLen"]
         for item in self.statFuncReg:

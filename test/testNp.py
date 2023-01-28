@@ -111,6 +111,29 @@ def test14():
 def test15():
     print(int(np.around(0.9, 0)))
 
+def test16():
+    rFitnessList = [1., 2., 3.]
+    bestRIndex = 0
+    badRIndex = 0
+    for i in range(len(rFitnessList)):
+        if rFitnessList[i] < rFitnessList[bestRIndex]:
+            bestRIndex = i
+        if rFitnessList[i] > rFitnessList[badRIndex]:
+            badRIndex = i
+    if bestRIndex == badRIndex:
+        middleRIndex = bestRIndex
+    else:
+        middleRIndex = ({0, 1, 2} - {bestRIndex, badRIndex}).pop()
+
+    bestR = rFitnessList[bestRIndex]
+    badR = rFitnessList[badRIndex]
+    middleR = rFitnessList[middleRIndex]
+    print('bestR:{0} \r\n badR:{1} \r\n middleR:{2}'.format(bestR, badR, middleR))
+
+def test17():
+    l0 = [[[0, 1], [3, 6]], [[-0, -1], [-3, -6]]]
+    print(l0[0])
+
 def main():
     # test1()
     # test2()
@@ -126,7 +149,9 @@ def main():
     # test11()
     # test13()
     # test14()
-    test15()
+    # test15()
+    # test16()
+    test17()
 
 
 if __name__ == "__main__":

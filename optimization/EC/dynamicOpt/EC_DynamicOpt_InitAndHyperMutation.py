@@ -7,7 +7,7 @@
 @Author  : jay.zhu
 @Time    : 2022/11/3 21:38
 """
-from EC.dynamicOpt.EC_DynamicOpt_HyperMutation import EC_DynamicOpt_HyperMutation
+from optimization.EC.dynamicOpt.EC_DynamicOpt_HyperMutation import EC_DynamicOpt_HyperMutation
 
 
 class EC_DynamicOpt_InitAndHyperMutation(EC_DynamicOpt_HyperMutation):
@@ -20,4 +20,6 @@ class EC_DynamicOpt_InitAndHyperMutation(EC_DynamicOpt_HyperMutation):
     def adaptToEnvironmentWhenChange(self):
         super().adaptToEnvironmentWhenChange()
         self.chromosomeInit()
+        self.clearBestChromosome(self.BEST_IN_NOW_GEN_DIM_INDEX)
         self.fitting(isOffspring=False)
+

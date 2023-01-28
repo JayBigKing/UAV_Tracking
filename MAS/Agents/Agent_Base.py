@@ -21,9 +21,9 @@ class Agent_Base(ABC):
     def recvMeg(self, **kwargs):
         pass
 
-    def optimization(self):
+    def optimization(self, **kwargs):
         self.firstRun = False
-        self.optimizationResult = self.optimizer.optimize()
+        self.optimizationResult = self.optimizer.optimize(**kwargs)
 
     @abstractmethod
     def update(self):

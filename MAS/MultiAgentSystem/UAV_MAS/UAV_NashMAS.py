@@ -8,7 +8,7 @@
 @Time    : 2022/10/14 14:09
 """
 import numpy as np
-from EC.EC_Common import ArgsDictValueController
+from optimization.common.ArgsDictValueController import ArgsDictValueController
 from MAS.MultiAgentSystem.UAV_MAS.UAV_MAS_Base import UAV_MAS_Base
 
 
@@ -23,6 +23,20 @@ class UAV_NashMAS(UAV_MAS_Base):
         super().__init__(agents, masArgs, None)
         self.lastAgentOptimizationRes = []
         self.NashMas_Args = ArgsDictValueController(masArgs, self.__NASH_MAS_DEFAULT_ARGS, onlyUseDefaultKey=True)
+
+    def optimization(self):
+        self.firstNashOptimizationFlag = True
+        super().optimization()
+
+    def optimizationInner(self):
+        self.communication()
+        if self.firstNashOptimizationFlag is True:
+            for agent in self.agents:
+                agent.optimization(init=True)
+            self.firstNashOptimizationFlag = False
+        else:
+            for agent in self.agents:
+                agent.optimization()
 
     def communication(self):
         predictVelocityList = [item.predictVelocityList for item in self.agents]

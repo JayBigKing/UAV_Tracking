@@ -8,14 +8,23 @@
 @Time    : 2022/10/14 14:29
 """
 from Jay_Tool.LogTool import myLogger
-
+from optimization.common.ArgsDictValueController import ArgsDictValueController
 
 class Scene_Base:
-    def __init__(self, agents, multiAgentSystem, needRunningTimes, ):
+    SCENE_BASE_DEFAULT_ARGS = {
+        "ifPrintRunningEpoch" : True
+    }
+    def __init__(self, agents, multiAgentSystem, needRunningTimes, sceneArgs = None):
         self.agents = agents
         self.multiAgentSystem = multiAgentSystem
         self.needRunningTimes = needRunningTimes
         self.nowRunningTime = 0
+        if sceneArgs is not None:
+            self.SCENE_BASE_Args = ArgsDictValueController(userArgsDict=sceneArgs,
+                                                           defaultArgsDict=self.SCENE_BASE_DEFAULT_ARGS)
+        else:
+            self.SCENE_BASE_Args = ArgsDictValueController(userArgsDict=dict(),
+                                                           defaultArgsDict=self.SCENE_BASE_DEFAULT_ARGS)
 
     def shouldContinue(self):
         if self.nowRunningTime < self.needRunningTimes:
@@ -37,7 +46,8 @@ class Scene_Base:
         self.runningPreProcess()
         while self.shouldContinue():
             self.runningInner()
-            myLogger.myLogger_Logger().info('running epoch : %d / %d' % (self.nowRunningTime, self.needRunningTimes))
+            if self.SCENE_BASE_Args["ifPrintRunningEpoch"] is True:
+                myLogger.myLogger_Logger().info('running epoch : %d / %d' % (self.nowRunningTime, self.needRunningTimes))
         self.runningFinal()
 
 

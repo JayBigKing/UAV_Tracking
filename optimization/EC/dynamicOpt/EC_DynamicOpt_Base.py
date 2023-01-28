@@ -8,8 +8,8 @@
 @Time    : 2022/10/10 20:58
 """
 
-from EC.EC_WithStat_Base import EC_WithStat_Base
-from EC.dynamicOpt.EC_ChangeDetect import EC_ChangeDetector_EvaluateSolutions, \
+from optimization.EC.EC_WithStat_Base import EC_WithStat_Base
+from optimization.EC.dynamicOpt.EC_ChangeDetect import EC_ChangeDetector_EvaluateSolutions, \
     EC_ChangeDetector_BestSolution
 
 
@@ -17,6 +17,7 @@ class EC_DynamicOpt_Base(EC_WithStat_Base):
     EC_DYNAMIC_OPT_BASE_DEFAULT_ARGS = {
         "populationProportionForEvaluateSolutions": 0.15,
         "refractoryPeriodLength": 10,
+        "actionChangePeriodLength": 10,
     }
     EC_DYNAMIC_OPT_BASE_DEFAULT_CHANGE_DETECTOR_REG_DICT = {
         "EvaluateSolutions": EC_ChangeDetector_EvaluateSolutions,
@@ -32,6 +33,7 @@ class EC_DynamicOpt_Base(EC_WithStat_Base):
         self.initChangeDetector(changeDetectorRegisters)
 
         self.refractoryPeriodTick = self.ECArgsDictValueController["refractoryPeriodLength"]
+        self.actionChangePeriodTick = 0
 
     def initChangeDetector(self, changeDetectorRegisters):
         if isinstance(changeDetectorRegisters, str):
@@ -83,7 +85,11 @@ class EC_DynamicOpt_Base(EC_WithStat_Base):
 
     def adaptToEnvironment(self, isChange):
         if isChange is True:
-            self.adaptToEnvironmentWhenChange()
+            if self.actionChangePeriodTick == 0:
+                self.adaptToEnvironmentWhenChange()
+                self.actionChangePeriodTick = self.ECArgsDictValueController["actionChangePeriodLength"]
+            else:
+                self.actionChangePeriodTick -= 1
         else:
             refractoryPeriodLength = self.ECArgsDictValueController["refractoryPeriodLength"]
             if self.refractoryPeriodTick < refractoryPeriodLength:
@@ -91,3 +97,4 @@ class EC_DynamicOpt_Base(EC_WithStat_Base):
                 self.adaptToEnvironmentWhenRefractoryPeriod()
             else:
                 self.adaptToEnvironmentWhenNormal()
+                self.actionChangePeriodTick = 0

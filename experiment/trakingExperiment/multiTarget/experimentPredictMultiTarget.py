@@ -16,14 +16,10 @@ from experiment.experimentInit import experimentInit
 from Jay_Tool.EfficiencyTestTool.EfficiencyTestTool import clockTester
 from Scene.UAV_Scene.multiTarget.UAV_MultiTarget_PredictScene import UAV_MultiTarget_PredictScene
 from MAS.Agents.UAV_Agent import UAV_TargetAgent
-from MAS.Agents.UAV_Agent.multiTarget.UAV_MultiTargets_Agent import UAV_MultiTarget_Agent
 from MAS.Agents.UAV_Agent.multiTarget.UAV_MultiTargets_ProbabilitySelectTargetAgent import \
     UAV_MultiTargets_ProbabilitySelectTargetAgent
-from EC.dynamicOpt.EC_DynamicOpt_InitAndHyperMutation import EC_DynamicOpt_InitAndHyperMutation
+from optimization.EC.dynamicOpt.EC_DynamicOpt_InitAndHyperMutation import EC_DynamicOpt_InitAndHyperMutation
 from MAS.MultiAgentSystem.UAV_MAS.multiTarget.UAV_MultiTarget_PredictMAS import UAV_MultiTarget_PredictMAS
-from MAS.MultiAgentSystem.UAV_MAS.multiTarget.UAV_MultiTarget_PredictAndNashMAS import UAV_MultiTarget_PredictAndNashMAS
-from MAS.MultiAgentSystem.UAV_MAS.multiTarget.UAV_MultiTarget_PredictAndSerialMAS import \
-    UAV_MultiTarget_PredictAndSerialMAS
 
 
 def experimentBase():

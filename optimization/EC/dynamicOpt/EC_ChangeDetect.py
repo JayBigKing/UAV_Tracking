@@ -12,7 +12,7 @@ from enum import Enum
 from collections import defaultdict
 import random
 import numpy as np
-from EC.EC_Common import ArgsDictValueController
+from optimization.common.ArgsDictValueController import ArgsDictValueController
 
 
 class EC_ChangeDetector_DetectState(Enum):
@@ -20,11 +20,14 @@ class EC_ChangeDetector_DetectState(Enum):
     INITIAL = 1,
     ON_WORK = 2,
 
+def EC_ChangeDetector_Base_fittingCmpFunc(a, b):
+    return a - b
 
+# "fittingCmpFunc": lambda a, b: (a - b),
 class EC_ChangeDetector_Base:
     EC_ChangeDetector_DEFAULT_ARGS = {
         "initialNeedTimes": 5,
-        "fittingCmpFunc": lambda a, b: (a - b),
+        "fittingCmpFunc": EC_ChangeDetector_Base_fittingCmpFunc,
     }
 
     def __init__(self, n, detectArgs=None):

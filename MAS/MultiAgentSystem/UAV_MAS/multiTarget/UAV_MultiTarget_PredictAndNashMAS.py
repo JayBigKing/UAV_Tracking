@@ -8,7 +8,8 @@
 @Time    : 2022/11/5 20:05
 """
 import numpy as np
-from EC.EC_Common import ArgsDictValueController
+from optimization.common.ArgsDictValueController import ArgsDictValueController
+from MAS.MultiAgentSystem.MAS_MultiThread_Base import MAS_MultiThread_Base
 from MAS.MultiAgentSystem.UAV_MAS.multiTarget.UAV_MultiTarget_PredictMAS import UAV_MultiTarget_PredictMAS
 
 class UAV_MultiTarget_PredictAndNashMAS(UAV_MultiTarget_PredictMAS):
@@ -16,12 +17,13 @@ class UAV_MultiTarget_PredictAndNashMAS(UAV_MultiTarget_PredictMAS):
         "allCountDiffNashBalanceValue": 5e-1,
         "oneDiffNashBalanceValue": 1e-4
     }
-    def __init__(self, agents, masArgs, targetNum, terminalHandler=None, predictorCls=None, deltaTime=1.):
+    def __init__(self, agents, masArgs, targetNum, terminalHandler=None, predictorCls=None, statRegisters=None, deltaTime=1.):
         super().__init__(agents=agents,
                          masArgs=masArgs,
                          targetNum=targetNum,
                          terminalHandler=self.terminalHandler,
                          predictorCls=predictorCls,
+                         statRegisters=statRegisters,
                          deltaTime=deltaTime)
         self.lastAgentOptimizationRes = []
         self.NashMas_Args = ArgsDictValueController(masArgs,
@@ -32,6 +34,21 @@ class UAV_MultiTarget_PredictAndNashMAS(UAV_MultiTarget_PredictMAS):
     def initShouldContinueOptimizationVar(self, terminalHandler):
         super().initShouldContinueOptimizationVar(terminalHandler)
         self.firstCommunicationFlag = True
+
+    def optimization(self):
+        self.firstNashOptimizationFlag = True
+        super().optimization()
+
+
+    def optimizationInner(self):
+        self.communication()
+        if self.firstNashOptimizationFlag is True:
+            for agent in self.agents:
+                agent.optimization(init=True)
+            self.firstNashOptimizationFlag = False
+        else:
+            for agent in self.agents:
+                agent.optimization()
 
     def communication(self):
         if self.firstCommunicationFlag is True:
