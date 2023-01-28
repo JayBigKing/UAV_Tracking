@@ -16,12 +16,17 @@ from Jay_Tool.LogTool import myLogger
 from Scene.Scene_Base import Scene_Base
 from Jay_Tool.visualizeTool.CoorDiagram import CoorDiagram
 from dataStatistics.statFuncListGenerator import statFuncListGenerator
+from optimization.common.ArgsDictValueController import ArgsDictValueController
 
 
 class UAV_Scene_Base(Scene_Base):
+    UAV_SCENE_BASE_DEFAULT_ARGS = {
+        "storeStatDataName": "storeStatData"
+    }
+
     def __init__(self, agentsNum, agentsCls, agentsArgs, optimizerCls, optimizerArgs, targetCls, targetArgs, MAS_Cls,
                  MAS_Args, needRunningTime, targetNum=1, deltaTime=1., figureSavePath=None, statOutputRegisters=None,
-                 statOutputDict=None, sceneArgs = None):
+                 statOutputDict=None, sceneArgs=None):
         self.agentsNum = agentsNum
         self.targetNum = targetNum
         self.deltaTime = deltaTime
@@ -31,8 +36,8 @@ class UAV_Scene_Base(Scene_Base):
             "UAV_SCENE_BASE_UAV_TRAJECTORY_VISUALIZE": self.UAV_SCENE_BASE_UAVTrajectoryVisualize,
             "UAV_SCENE_BASE_UAVDisVisualize": self.UAV_SCENE_BASE_UAVDisVisualize,
             "UAV_SCENE_BASE_UAVAlertDisVisualize": self.UAV_SCENE_BASE_UAVAlertDisVisualize,
-            "UAV_MULTI_TARGET_SCENE_BASE_UAVAlertDisStore":self.UAV_SCENE_BASE_UAVAlertDisStore,
-            "UAV_MULTI_TARGET_SCENE_BASE_UAVFitnessStore":self.UAV_SCENE_BASE_UAVFitnessStore
+            "UAV_MULTI_TARGET_SCENE_BASE_UAVAlertDisStore": self.UAV_SCENE_BASE_UAVAlertDisStore,
+            "UAV_MULTI_TARGET_SCENE_BASE_UAVFitnessStore": self.UAV_SCENE_BASE_UAVFitnessStore
         }
 
         if statOutputDict is not None:
@@ -41,6 +46,9 @@ class UAV_Scene_Base(Scene_Base):
         if statOutputRegisters is None:
             statOutputRegisters = ["UAV_SCENE_BASE_UAV_TRAJECTORY_VISUALIZE"]
         self.statOutputFuncReg = statFuncListGenerator(statOutputRegisters, self.__UAV_Scene_Base_stat_output_dict)
+        self.UAV_SCENE_BASE_Args = ArgsDictValueController(sceneArgs,
+                                                           self.UAV_SCENE_BASE_DEFAULT_ARGS,
+                                                           onlyUseDefaultKey=True)
 
         self._initAgents(agentsCls, agentsArgs, optimizerCls, optimizerArgs, deltaTime)
         self._initTargets(targetCls, targetArgs, deltaTime)
@@ -136,7 +144,8 @@ class UAV_Scene_Base(Scene_Base):
     def UAV_SCENE_BASE_SimpleStoreStatData(self, scattersList, nameList):
         if self.__statOutputFuncIsDone is True:
             if self.__csvNameLists != [] and self.__csvDataLists != []:
-                saveStatDataPath = time.strftime("storeStatData%Y%m%d_%H%M%S.csv", time.localtime())
+                saveStatDataPath = "%s_%s" % (
+                self.UAV_SCENE_BASE_Args["storeStatDataName"], time.strftime("%Y%m%d_%H%M%S.csv", time.localtime()))
                 if self.csvSavePath[-1] != "/":
                     self.csvSavePath = self.csvSavePath + "/"
 
@@ -146,7 +155,7 @@ class UAV_Scene_Base(Scene_Base):
 
                     saveCSVDict = dict()
                     maxLenOfDataList = max([len(item) for item in self.__csvDataLists])
-                    for j in range(maxLenOfDataList+1):
+                    for j in range(maxLenOfDataList + 1):
                         for item in self.__csvDataLists:
                             if j > len(item):
                                 item.append("")
@@ -224,8 +233,6 @@ class UAV_Scene_Base(Scene_Base):
                                           "when call function %s" % (inspect.stack()[0][3]))
         except NotImplementedError as e:
             myLogger.myLogger_Logger().warn(repr(e))
-
-
 
     def __UAV_SCENE_BASE_UAVAlertDisCalcInner(self):
         scattersList = []

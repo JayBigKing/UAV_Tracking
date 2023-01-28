@@ -17,6 +17,7 @@ from Jay_Tool.EfficiencyTestTool.EfficiencyTestTool import clockTester
 from MAS.Agents.UAV_Agent.multiTarget.UAV_MultiTargets_Agent import UAV_MultiTarget_Agent
 from MAS.Agents.UAV_Agent.multiTarget.UAV_MultiTargets_ProbabilitySelectTargetAgent import \
     UAV_MultiTargets_ProbabilitySelectTargetAgent
+from MAS.Agents.UAV_Agent.multiTarget.UAV_MultiTargets_MPC import UAV_MultiTargets_MPC
 import experimentBase
 saveFigPathPrefix = "../../experimentRes/experimentForPaper/"
 
@@ -201,6 +202,31 @@ def experiment5():
         uav_scene.run()
     os.remove(newDatasetPath)
 
+@clockTester
+def experiment6():
+    '''
+    定量分析，是否使用概率型agent
+    '''
+    agentsNum = 4
+    targetNum = 2
+    targetMovingWay = "randMoving"
+    newDatasetPath = experimentBase.generateDataset(agentsNum, targetNum, targetMovingWay)
+    ifUseProList = [["MPC", UAV_MultiTargets_MPC], ["noMPC", UAV_MultiTargets_ProbabilitySelectTargetAgent]]
+    for item in ifUseProList:
+        figureSavePathKeyword = "%sexperiment6_%s" % (saveFigPathPrefix, item[0])
+        myLogger.myLogger_Logger().info("experiment6 : %s start" % item[0])
+        uav_scene = experimentBase.experimentBase(agentCls=item[1],
+                                                  getTargetTrajectoryWay="dataset",
+                                                  masKey="PredictAndNashMAS",
+                                                  optimizerKey="dynEC",
+                                                  datasetPath=newDatasetPath,
+                                                  targetMovingWay="randMoving",
+                                                  figureSavePathKeyword=figureSavePathKeyword,
+                                                  userStatOutputRegisters=[
+                                                      "UAV_MULTI_TARGET_SCENE_BASE_TARGET_TRACKED_NUM_VARIANCE_STORE"
+                                                        ])
+        uav_scene.run()
+    os.remove(newDatasetPath)
 
 @clockTester
 def experimentPSO():
@@ -235,11 +261,12 @@ def experimentNoDyn():
 def experiment():
     experimentInit()
     # experiment1()
-    experiment2()
+    # experiment2()
     # experiment3()
     # experiment4()
     # experiment5()
     # experimentPSO()
+    experiment6()
 
 
 if __name__ == "__main__":
