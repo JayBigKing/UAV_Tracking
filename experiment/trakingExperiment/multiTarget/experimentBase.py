@@ -26,6 +26,7 @@ from optimization.PSO.PSO_Tracking import PSO_Tracking
 from optimization.EC.DiffEC.EC_DiffEC_Tracking_ADE import EC_DiffEC_Tracking_ADE
 from optimization.EC.DiffEC.EC_DiffEC_Tracking_DE import EC_DiffEC_Tracking_DE
 from optimization.EC.EC_Tracking import EC_Tracking
+from optimization.EC.dynamicOpt.DE.EC_DynamicOpt_DEMemory import EC_DynamicOpt_DEMemory
 from MAS.MultiAgentSystem.UAV_MAS.multiTarget.UAV_MultiTarget_PredictMAS import UAV_MultiTarget_PredictMAS
 from MAS.MultiAgentSystem.UAV_MAS.multiTarget.UAV_MultiTarget_PredictAndNashMAS import UAV_MultiTarget_PredictAndNashMAS
 
@@ -63,6 +64,23 @@ DYN_EC_OPTIMIZATION_COMPUTATION_ARGS = {
     "borders": [0, 1],
 }
 
+DYN_DE_OPTIMIZATION_COMPUTATION_ARGS = {
+    "floatMutationOperateArg": 0.3,
+    "floatCrossoverAlpha": 0.5,
+    "mutationProbability": 0.05,
+    "fittingMinDenominator": 0.2,
+
+    "DiffCR0": 0.1,
+    "DiffCR1": 0.6,
+    "DiffF0": 0.1,
+    "DiffF1": 0.6,
+
+    "performanceThreshold": 3,
+    "refractoryPeriodLength": 2,
+    "bestArchivesMaxSize": 10,
+    "borders": [0, 1],
+}
+
 NO_DYN_EC_OPTIMIZATION_COMPUTATION_ARGS = {
     "floatMutationOperateArg": 0.3,
     "floatCrossoverAlpha": 0.5,
@@ -92,6 +110,10 @@ OPTIMIZATION_AND_ARGS_DICT = {
     "noDynEC": {
         "class": EC_Tracking,
         "computationArgs": NO_DYN_EC_OPTIMIZATION_COMPUTATION_ARGS,
+    },
+    "DynDE": {
+        "class": EC_DynamicOpt_DEMemory,
+        "computationArgs":DYN_DE_OPTIMIZATION_COMPUTATION_ARGS,
     }
 }
 

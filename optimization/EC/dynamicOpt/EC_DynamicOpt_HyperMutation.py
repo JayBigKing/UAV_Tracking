@@ -9,7 +9,6 @@
 """
 import random
 import numpy as np
-from optimization.common.ArgsDictValueController import ArgsDictValueController
 from optimization.EC.dynamicOpt.EC_DynamicOpt_Base import EC_DynamicOpt_Base
 from optimization.EC.dynamicOpt.EC_ChangeDetect import EC_ChangeDetector_PerformanceThresh
 
@@ -39,9 +38,7 @@ class EC_DynamicOpt_HyperMutation(EC_DynamicOpt_Base):
         super().__init__(n, dimNum, maxConstraint, minConstraint, evalVars, otimizeWay,
                          needEpochTimes, ECArgs, statRegisters, changeDetectorRegisters,
                          otherTerminalHandler, useCuda)
-        self.ECDynOptHyperMutation_ECArgsDictValueController = ArgsDictValueController(userArgsDict=ECArgs,
-                                                                                       defaultArgsDict=self.EC_DYNAMIC_OPT_HYPER_MUTATION_DEFAULT_CHANGE_DETECTOR_REG_DICT,
-                                                                                       onlyUseDefaultKey=True)
+        self.DEOArgDictValueController.update(newDict=self.EC_DYNAMIC_OPT_HYPER_MUTATION_DEFAULT_CHANGE_DETECTOR_REG_DICT, newUserDict=self.ECArgs)
 
 
 
@@ -72,19 +69,19 @@ class EC_DynamicOpt_HyperMutation(EC_DynamicOpt_Base):
             middleChroIndex += 2
 
     def adaptToEnvironmentWhenNormal(self):
-        self.ECArgsDictValueController["mutationProbability"] = self.ECDynOptHyperMutation_ECArgsDictValueController[
+        self.ECArgsDictValueController["mutationProbability"] = self.DEOArgDictValueController[
             "mutationProbabilityWhenNormal"]
 
     def adaptToEnvironmentWhenChange(self):
         super().adaptToEnvironmentWhenChange()
-        self.ECArgsDictValueController["mutationProbability"] = self.ECDynOptHyperMutation_ECArgsDictValueController[
+        self.ECArgsDictValueController["mutationProbability"] = self.DEOArgDictValueController[
             "mutationProbabilityWhenChange"]
 
     def adaptToEnvironmentWhenRefractoryPeriod(self):
-        refractoryPeriodLength = self.ECArgsDictValueController["refractoryPeriodLength"]
+        refractoryPeriodLength = self.DEOArgDictValueController["refractoryPeriodLength"]
         if self.refractoryPeriodTick == refractoryPeriodLength:
             self.ECArgsDictValueController["mutationProbability"] = \
-                self.ECDynOptHyperMutation_ECArgsDictValueController["mutationProbabilityWhenNormal"]
+                self.DEOArgDictValueController["mutationProbabilityWhenNormal"]
 
     def EC_DynamicOpt_HyperMutation_PrintOutEveryGenFunc(self, **kwargs):
         bestAimFuncVal = kwargs["chromosomesAimFuncValue"]

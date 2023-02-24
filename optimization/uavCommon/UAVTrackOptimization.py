@@ -10,13 +10,13 @@
 
 
 class UAVTrackOptimization:
-    def __init__(self, ECArgsDictValueController = None, ECDynOptHyperMutation_ECArgsDictValueController = None):
+    def __init__(self, ECArgsDictValueController = None, DEOArgDictValueController = None):
         if ECArgsDictValueController is None:
             self.ECArgsDictValueController = {}
         else:
             self.ECArgsDictValueController = ECArgsDictValueController
 
-        if ECDynOptHyperMutation_ECArgsDictValueController is None:
-            self.ECDynOptHyperMutation_ECArgsDictValueController = {}
+        if DEOArgDictValueController is None:
+            self.DEOArgDictValueController = {}
         else:
-            self.ECDynOptHyperMutation_ECArgsDictValueController = ECDynOptHyperMutation_ECArgsDictValueController
+            self.DEOArgDictValueController = DEOArgDictValueController

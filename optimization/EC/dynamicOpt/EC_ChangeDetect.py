@@ -109,9 +109,9 @@ class EC_ChangeDetector_EvaluateSolutions(EC_ChangeDetector_Base):
     def __init__(self, n, detectArgs=None):
         super().__init__(n, detectArgs)
         self.argsDictValueController.update(self.EC_ChangeDetector_EvaluateSolutions_DEFAULT_ARGS)
-        if self.inspectedNum < 10:
+        if self.chromosomesNum < 10:
             self.inspectedNum = 1
-        elif self.inspectedNum < 200:
+        elif self.chromosomesNum < 200:
             populationProportion = self.argsDictValueController.getValueByKey(
                 "populationProportionForEvaluateSolutions")
             self.inspectedNum = int(float(self.chromosomesNum) * populationProportion)

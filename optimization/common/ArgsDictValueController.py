@@ -56,7 +56,22 @@ class ArgsDictValueController:
     #         self.userArgsDict.update(userArgsDict)
     #     if defaultArgsDict is not None:
     #         self.defaultArgsDict.update(defaultArgsDict)
-    def update(self, newDict, onlyAddNotExists = True):
+
+    # def update(self, newDict, onlyAddNotExists = True):
+    #     if onlyAddNotExists is True:
+    #         for key in newDict.keys():
+    #             if self.userArgsDict.get(key) is None:
+    #                 self.userArgsDict[key] = newDict[key]
+    #     else:
+    #         self.userArgsDict.update(newDict)
+
+    def update(self, newDict, newUserDict=None, onlyAddNotExists = True):
+        if newUserDict is not None:
+            newDict = dict(newDict)
+            for keyItem in newDict.keys():
+                if newUserDict.get(keyItem) is not None:
+                    newDict[keyItem] = newUserDict[keyItem]
+
         if onlyAddNotExists is True:
             for key in newDict.keys():
                 if self.userArgsDict.get(key) is None:

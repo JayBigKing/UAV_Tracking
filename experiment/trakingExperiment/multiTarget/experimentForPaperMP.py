@@ -310,16 +310,25 @@ class Experiment4(ExperimentBase):
     '''
     定量分析，是否使用DEO的与uav的平均距离，fitness，稳定性
     '''
+    __USING_AGENT_DICT = {
+        "dynEC":UAV_MultiTargets_MPC,
+        "noDynEC": UAV_MultiTargets_ProbabilitySelectTargetAgent,
+        "ADE": UAV_MultiTargets_ProbabilitySelectTargetAgent,
+        "DE": UAV_MultiTargets_ProbabilitySelectTargetAgent,
+        "PSO": UAV_MultiTargets_ProbabilitySelectTargetAgent,
+        "DynDE": UAV_MultiTargets_MPC
+    }
     def getClsName(self):
         return self.__class__.__name__
 
     def experiment4Inner(self, agentsNum=4, targetNum=2, targetMovingWay="randMoving", runningTimes=1):
-        experimentOptimizerList = ["dynEC", "noDynEC", "ADE", "DE", "PSO"]
+        experimentOptimizerList = ["dynEC", "noDynEC", "ADE", "DE", "PSO", "DynDE"]
+
         for i in range(runningTimes):
             newDatasetPath = experimentBase.generateDataset(agentsNum, targetNum, targetMovingWay)
             for item in experimentOptimizerList:
                 figureSavePathKeyword = "%s%s_%s" % (saveFigPathPrefix, self.nowClsName, item)
-                uav_scene = experimentBase.experimentBase(agentCls=UAV_MultiTargets_ProbabilitySelectTargetAgent,
+                uav_scene = experimentBase.experimentBase(agentCls=self.__USING_AGENT_DICT[item],
                                                           getTargetTrajectoryWay="dataset",
                                                           masKey="PredictAndNashMAS",
                                                           optimizerKey=item,

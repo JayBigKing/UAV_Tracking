@@ -29,7 +29,7 @@ class PSO_Tracking(PSO_Base):
                          useCuda=useCuda)
 
         self.ECArgsDictValueController = self.PSOArgsDictValueController
-        self.ECDynOptHyperMutation_ECArgsDictValueController = {}
+        self.DEOArgDictValueController = {}
 
     def optimize(self, **kwargs):
         if kwargs.get("init"):

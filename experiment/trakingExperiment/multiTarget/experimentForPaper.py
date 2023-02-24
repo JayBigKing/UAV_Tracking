@@ -260,13 +260,13 @@ def experimentNoDyn():
 
 def experiment():
     experimentInit()
-    # experiment1()
+    experiment1()
     # experiment2()
     # experiment3()
     # experiment4()
     # experiment5()
     # experimentPSO()
-    experiment6()
+    # experiment6()
 
 
 if __name__ == "__main__":

@@ -16,7 +16,7 @@ class EC_DiffEC_Tracking_Base(EC_DiffEC_Base):
         super().__init__(n, dimNum, maxConstraint, minConstraint, evalVars, otimizeWay, needEpochTimes, ECArgs,
                          statRegisters, otherTerminalHandler, useCuda)
 
-        self.ECDynOptHyperMutation_ECArgsDictValueController = {}
+        self.DEOArgDictValueController = {}
 
     def fitting(self, isOffspring=True):
         # 因为是动态的，所以最优的fitting是会变的，所以先fitting最优的那个

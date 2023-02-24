@@ -14,7 +14,7 @@ class EC_Tracking(EC_WithStat_Base):
                  statRegisters=None, otherTerminalHandler=None, useCuda=False):
         super().__init__(n, dimNum, maxConstraint, minConstraint, evalVars, otimizeWay, needEpochTimes, ECArgs,
                          statRegisters, otherTerminalHandler, useCuda)
-        self.ECDynOptHyperMutation_ECArgsDictValueController = {}
+        self.DEOArgDictValueController = {}
     
     def fitting(self, isOffspring=True):
         # 因为是动态的，所以最优的fitting是会变的，所以先fitting最优的那个
