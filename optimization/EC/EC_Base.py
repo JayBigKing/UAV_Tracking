@@ -112,7 +112,7 @@ class EC_Base:
 
     def selectTypeInit(self, selectType: EC_SelectType = EC_SelectType.ROULETTE):
         if selectType != []:
-            self.EC_Base_selectType = EC_SelectType
+            self.EC_Base_selectType = selectType
         else:
             self.EC_Base_selectType = EC_SelectType.ROULETTE
 
@@ -127,7 +127,6 @@ class EC_Base:
             # self.cmpToBestChromosomeAndStore(i, self.CHROMOSOME_DIM_INDEX)
 
         # self.fitting(isOffspring=False)
-
 
     '''
     some helpful computation below
@@ -158,7 +157,8 @@ class EC_Base:
         self._nowEpochTime += 1
         if otherTerminalHandler is not None:
             if otherTerminalHandler(
-                    bestChromosomesFittingValue=self.bestChromosomesFittingValue[self.BEST_IN_ALL_GEN_DIM_INDEX]) is False:
+                    bestChromosomesFittingValue=self.bestChromosomesFittingValue[
+                        self.BEST_IN_ALL_GEN_DIM_INDEX]) is False:
                 return False
 
         if self._nowEpochTime <= self.needEpochTimes:
@@ -168,7 +168,7 @@ class EC_Base:
 
     def initShouldContinueVar(self, otherTerminalHandler=None):
         if otherTerminalHandler is not None:
-            otherTerminalHandler(initFlag = True)
+            otherTerminalHandler(initFlag=True)
         self._nowEpochTime = 0
 
     '''
@@ -250,15 +250,21 @@ class EC_Base:
     def select(self):
         selectIndexSet = self.EC_Base_selectInner()
         nextChromosome = np.zeros((self.dimNum, self.Np))
+        candidateAimFuncValue = np.array(self.chromosomesAimFuncValue)
+        candidateFittingValue = np.array(self.chromosomesFittingValue)
         for i, selectIndex in enumerate(selectIndexSet):
             if selectIndex >= self.Np:
                 nextChromosome[:, i] = self.middleChromosomes[:, selectIndex - self.Np]
                 self.chromosomesAimFuncValue[i][self.CHROMOSOME_DIM_INDEX] = \
-                    self.chromosomesAimFuncValue[selectIndex - self.Np][self.MIDDLE_CHROMOSOME_DIM_INDEX]
+                    candidateAimFuncValue[selectIndex - self.Np][self.MIDDLE_CHROMOSOME_DIM_INDEX]
                 self.chromosomesFittingValue[i][self.CHROMOSOME_DIM_INDEX] = \
-                    self.chromosomesFittingValue[selectIndex - self.Np][self.MIDDLE_CHROMOSOME_DIM_INDEX]
+                    candidateFittingValue[selectIndex - self.Np][self.MIDDLE_CHROMOSOME_DIM_INDEX]
             else:
                 nextChromosome[:, i] = self.chromosomes[:, selectIndex]
+                self.chromosomesAimFuncValue[i][self.CHROMOSOME_DIM_INDEX] = \
+                    candidateAimFuncValue[selectIndex][self.CHROMOSOME_DIM_INDEX]
+                self.chromosomesFittingValue[i][self.CHROMOSOME_DIM_INDEX] = \
+                    candidateFittingValue[selectIndex][self.CHROMOSOME_DIM_INDEX]
 
         self.chromosomes = np.array(nextChromosome)
 
@@ -271,30 +277,54 @@ class EC_Base:
             pass
         elif self.EC_Base_codingType.value == EC_CodingType.FLOAT_CODING.value:
             if self.EC_Base_selectType == EC_SelectType.ROULETTE:
-                selectCount = 1
-                totalFittingValue = np.sum(self.chromosomesFittingValue[0:self.Np, :])
-                fittingProbabilityCount = 0.
-                fittingProbability = [self.chromosomesFittingValue[i, self.CHROMOSOME_DIM_INDEX] / totalFittingValue for
-                                      i in range(self.Np)]
-                fittingProbability.extend(
-                    [self.chromosomesFittingValue[i, self.MIDDLE_CHROMOSOME_DIM_INDEX] / totalFittingValue for i in
-                     range(self.Np)])
-                for i in range(selectNum):
-                    fittingProbabilityCount += fittingProbability[i]
-                    fittingProbability[i] = fittingProbabilityCount
-
-                while selectCount < self.Np:
-                    randomNum = np.random.random()
-                    selectIndex = bisect.bisect_left(fittingProbability, randomNum)
-                    if selectIndex not in selectIndexSet:
-                        selectCount += 1
-                        selectIndexSet.add(selectIndex)
+                selectIndexSet = self.EC_Base_selectInnerForRoulette(selectNum, selectIndexSet)
             elif self.EC_Base_selectType == EC_SelectType.TOUR:
-                pass
+                selectIndexSet = self.EC_Base_selectInnerForTour(selectNum)
         elif self.EC_Base_codingType.value == EC_CodingType.SYMBOL_CODING.value:
             pass
         elif self.EC_Base_codingType.value == EC_CodingType.OTHER_CODING.value:
             pass
+
+        return selectIndexSet
+
+    def EC_Base_selectInnerForRoulette(self, selectNum, selectIndexSet):
+        selectCount = 1
+        totalFittingValue = np.sum(self.chromosomesFittingValue[0:self.Np, :])
+        fittingProbabilityCount = 0.
+        fittingProbability = [self.chromosomesFittingValue[i, self.CHROMOSOME_DIM_INDEX] / totalFittingValue for
+                              i in range(self.Np)]
+        fittingProbability.extend(
+            [self.chromosomesFittingValue[i, self.MIDDLE_CHROMOSOME_DIM_INDEX] / totalFittingValue for i in
+             range(self.Np)])
+        for i in range(selectNum):
+            fittingProbabilityCount += fittingProbability[i]
+            fittingProbability[i] = fittingProbabilityCount
+
+        while selectCount < self.Np:
+            randomNum = np.random.random()
+            selectIndex = bisect.bisect_left(fittingProbability, randomNum)
+            if selectIndex not in selectIndexSet:
+                selectCount += 1
+                selectIndexSet.add(selectIndex)
+
+        return selectIndexSet
+
+    def EC_Base_selectInnerForTour(self, selectNum):
+        selectIndexSet = [self.bestChromosomeIndex]
+        for i in range(1, self.Np):
+            parent1Idx = np.random.randint(0, selectNum)
+            parent2Idx = np.random.randint(0, selectNum)
+            parent1FitVal = self.chromosomesFittingValue[
+                parent1Idx, self.CHROMOSOME_DIM_INDEX] if parent1Idx < self.Np else self.chromosomesFittingValue[
+                parent1Idx - self.Np, self.MIDDLE_CHROMOSOME_DIM_INDEX]
+            parent2FitVal = self.chromosomesFittingValue[
+                parent2Idx, self.CHROMOSOME_DIM_INDEX] if parent2Idx < self.Np else self.chromosomesFittingValue[
+                parent2Idx - self.Np, self.MIDDLE_CHROMOSOME_DIM_INDEX]
+
+            if self.cmpFitting(parent1FitVal, parent2FitVal) > 0:
+                selectIndexSet.append(parent1Idx)
+            else:
+                selectIndexSet.append(parent2Idx)
 
         return selectIndexSet
 
@@ -305,14 +335,13 @@ class EC_Base:
     def callAimFunc(self, chromosome, evalVars):
         return evalVars(chromosome)
 
-    def fitting(self, isOffspring = True):
+    def fitting(self, isOffspring=True):
         if isOffspring is True:
             valDim = self.MIDDLE_CHROMOSOME_DIM_INDEX
             calcChromosomes = self.middleChromosomes
         else:
             valDim = self.CHROMOSOME_DIM_INDEX
             calcChromosomes = self.chromosomes
-
 
         for i in range(self.Np):
             self.chromosomesFittingValue[i][valDim], self.chromosomesAimFuncValue[i][
@@ -360,4 +389,5 @@ class EC_Base:
                 self.bestChromosomesFittingValue[self.BEST_IN_ALL_GEN_DIM_INDEX], self.bestChromosomesAimFuncValue[
                     self.BEST_IN_ALL_GEN_DIM_INDEX] = self.bestChromosomesFittingValue[self.BEST_IN_NOW_GEN_DIM_INDEX], \
                                                       self.bestChromosomesAimFuncValue[self.BEST_IN_NOW_GEN_DIM_INDEX]
-                self.bestChromosome[:, self.BEST_IN_ALL_GEN_DIM_INDEX] = np.array(self.bestChromosome[:, self.BEST_IN_NOW_GEN_DIM_INDEX])
+                self.bestChromosome[:, self.BEST_IN_ALL_GEN_DIM_INDEX] = np.array(
+                    self.bestChromosome[:, self.BEST_IN_NOW_GEN_DIM_INDEX])
