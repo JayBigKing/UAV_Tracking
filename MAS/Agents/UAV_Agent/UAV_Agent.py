@@ -81,7 +81,7 @@ class UAV_Agent(Agent_UAV_Base):
         # self.agentCrowdPositionState = self.agentCrowd["positionState"]
         # self.agentCrowdVelocity = self.agentCrowd["positionState"]["velocity"]
         # self.agentCrowdOptimizationResult = self.agentCrowd["positionState"]["optimizationResult"]
-        self.optimizer.ECDynOptHyperMutation_ECArgsDictValueController["performanceThreshold"] = 1 / (
+        self.optimizer.DEOArgDictValueController["performanceThreshold"] = 1 / (
                 calcDistance(self.positionState, self.targetPositionList[0]) *
                 self.optimizer.ECArgsDictValueController["fittingMinDenominator"])
 

@@ -27,7 +27,7 @@ from Scene.UAV_Scene.multiTarget.UAV_MultiTarget_UsingDatasetScene import UAV_Mu
 
 saveFigPathPrefix = "../../experimentRes/experimentForPaper/"
 
-experimentBase.NEED_RUNNING_TIME = 200
+experimentBase.NEED_RUNNING_TIME = 2
 
 
 class ExperimentBase(ABC):
@@ -220,6 +220,7 @@ class Experiment2(ExperimentBase):
                                                                  "storeStatDataName":"balance"},
                                                       uavSceneCls=ExperimentBase.UAV_MTMP_UsingDatasetScene,
                                                       userStatOutputRegisters=[
+                                                          "UAV_MULTI_TARGET_SCENE_BASE_TARGET_TRACKED_NUM_VARIANCE_STORE",
                                                           "UAV_MULTI_TARGET_SCENE_BASE_DIS_BETWEEN_TARGET_AND_UAV_STORE",
                                                           "UAV_MULTI_TARGET_SCENE_BASE_EFFECTIVE_TIME_FOR_TARGET_STORE"])
             self.sceneList.append(uav_scene)
@@ -240,6 +241,7 @@ class Experiment2(ExperimentBase):
                                                                  "storeStatDataName":"noBalance"},
                                                       uavSceneCls=ExperimentBase.UAV_MTMP_UsingDatasetScene,
                                                       userStatOutputRegisters=[
+                                                          "UAV_MULTI_TARGET_SCENE_BASE_TARGET_TRACKED_NUM_VARIANCE_STORE",
                                                           "UAV_MULTI_TARGET_SCENE_BASE_DIS_BETWEEN_TARGET_AND_UAV_STORE",
                                                           "UAV_MULTI_TARGET_SCENE_BASE_EFFECTIVE_TIME_FOR_TARGET_STORE"])
             self.sceneList.append(uav_scene)
@@ -247,7 +249,8 @@ class Experiment2(ExperimentBase):
 
     def getUAVSceneListInner(self):
         experiment2RunningTimes = 1
-        randMovingNumList = [[4, 5], [5, 5], [6, 5]]
+        # randMovingNumList = [[4, 5], [5, 5], [6, 5]]
+        randMovingNumList = [[4, 2], [4, 4], [5, 7]]
         moveAsSinNumList = randMovingNumList
         for index, item in enumerate(randMovingNumList):
             self.experiment2Inner(agentsNum=item[0],
@@ -287,39 +290,53 @@ class Experiment3(ExperimentBase):
                                                               "UAV_MULTI_TARGET_SCENE_BASE_AVG_DIS_STORE",
                                                               "UAV_MULTI_TARGET_SCENE_BASE_AVG_DIS_STABILITY_STORE",
                                                               "UAV_MULTI_TARGET_SCENE_BASE_UAVFitnessStore",
-                                                              "UAV_MULTI_TARGET_SCENE_BASE_UAVAlertDisStore"
+                                                              "UAV_SCENE_BASE_UAVAvgDisStore",
+                                                              "UAV_MULTI_TARGET_SCENE_BASE_UAVAlertDisStore",
+                                                              "UAV_MULTI_TARGET_SCENE_BASE_TARGET_TRACKED_NUM_VARIANCE_STORE",
+                                                              "UAV_MULTI_TARGET_SCENE_BASE_EFFECTIVE_TIME_FOR_TARGET_STORE"
                                                           ])
                 self.sceneList.append(uav_scene)
                 self.newDatasetPathList.append(newDatasetPath)
 
     def getUAVSceneListInner(self):
-        runningTimes = 2
-        self.experiment3Inner(agentsNum=4,
-                              targetNum=2,
-                              targetMovingWay="randMoving",
-                              runningTimes=runningTimes,
-                              )
-        self.experiment3Inner(agentsNum=4,
-                              targetNum=2,
-                              targetMovingWay="movingAsSin",
-                              runningTimes=runningTimes,
-                              )
+        runningTimes = 1
+        agentTargetNumList = [[4, 2], [4, 4], [5, 7]]
+        for agentTargetNumItem in agentTargetNumList:
+            self.experiment3Inner(agentsNum=agentTargetNumItem[0],
+                                  targetNum=agentTargetNumItem[1],
+                                  targetMovingWay="randMoving",
+                                  runningTimes=runningTimes,
+                                  )
+            self.experiment3Inner(agentsNum=agentTargetNumItem[0],
+                                  targetNum=agentTargetNumItem[1],
+                                  targetMovingWay="movingAsSin",
+                                  runningTimes=runningTimes,
+                                  )
 
 
 class Experiment4(ExperimentBase):
     '''
     定量分析，是否使用DEO的与uav的平均距离，fitness，稳定性
     '''
+    __USING_AGENT_DICT = {
+        "dynEC":UAV_MultiTargets_MPC,
+        "noDynEC": UAV_MultiTargets_ProbabilitySelectTargetAgent,
+        "ADE": UAV_MultiTargets_ProbabilitySelectTargetAgent,
+        "DE": UAV_MultiTargets_ProbabilitySelectTargetAgent,
+        "PSO": UAV_MultiTargets_ProbabilitySelectTargetAgent,
+        "DynDE": UAV_MultiTargets_MPC
+    }
     def getClsName(self):
         return self.__class__.__name__
 
     def experiment4Inner(self, agentsNum=4, targetNum=2, targetMovingWay="randMoving", runningTimes=1):
         experimentOptimizerList = ["dynEC", "noDynEC", "ADE", "DE", "PSO"]
+
         for i in range(runningTimes):
             newDatasetPath = experimentBase.generateDataset(agentsNum, targetNum, targetMovingWay)
             for item in experimentOptimizerList:
                 figureSavePathKeyword = "%s%s_%s" % (saveFigPathPrefix, self.nowClsName, item)
-                uav_scene = experimentBase.experimentBase(agentCls=UAV_MultiTargets_ProbabilitySelectTargetAgent,
+                uav_scene = experimentBase.experimentBase(agentCls=self.__USING_AGENT_DICT[item],
                                                           getTargetTrajectoryWay="dataset",
                                                           masKey="PredictAndNashMAS",
                                                           optimizerKey=item,
@@ -331,23 +348,29 @@ class Experiment4(ExperimentBase):
                                                           userStatOutputRegisters=[
                                                               "UAV_MULTI_TARGET_SCENE_BASE_AVG_DIS_STORE",
                                                               "UAV_MULTI_TARGET_SCENE_BASE_AVG_DIS_STABILITY_STORE",
-                                                              "UAV_MULTI_TARGET_SCENE_BASE_UAVFitnessStore"
+                                                              "UAV_MULTI_TARGET_SCENE_BASE_UAVFitnessStore",
+                                                              "UAV_SCENE_BASE_UAVAvgDisStore",
+                                                              "UAV_MULTI_TARGET_SCENE_BASE_UAVAlertDisStore",
+                                                              "UAV_MULTI_TARGET_SCENE_BASE_TARGET_TRACKED_NUM_VARIANCE_STORE",
+                                                              "UAV_MULTI_TARGET_SCENE_BASE_EFFECTIVE_TIME_FOR_TARGET_STORE"
                                                           ])
                 self.sceneList.append(uav_scene)
                 self.newDatasetPathList.append(newDatasetPath)
 
     def getUAVSceneListInner(self):
-        runningTimes = 2
-        self.experiment4Inner(agentsNum=4,
-                              targetNum=2,
-                              targetMovingWay="randMoving",
-                              runningTimes=runningTimes,
-                              )
-        self.experiment4Inner(agentsNum=4,
-                              targetNum=2,
-                              targetMovingWay="movingAsSin",
-                              runningTimes=runningTimes,
-                              )
+        runningTimes = 1
+        agentTargetNumList = [[4, 2], [4, 4], [5, 7]]
+        for agentTargetNumItem in agentTargetNumList:
+            self.experiment4Inner(agentsNum=agentTargetNumItem[0],
+                                  targetNum=agentTargetNumItem[1],
+                                  targetMovingWay="randMoving",
+                                  runningTimes=runningTimes,
+                                  )
+            self.experiment4Inner(agentsNum=agentTargetNumItem[0],
+                                  targetNum=agentTargetNumItem[1],
+                                  targetMovingWay="movingAsSin",
+                                  runningTimes=runningTimes,
+                                  )
 
 class Experiment5(ExperimentBase):
     '''
@@ -397,7 +420,7 @@ class Experiment6(ExperimentBase):
     def getClsName(self):
         return self.__class__.__name__
 
-    def experiment5Inner(self, agentsNum=4, targetNum=2, targetMovingWay="randMoving", runningTimes=1):
+    def experiment6Inner(self, agentsNum=4, targetNum=2, targetMovingWay="randMoving", runningTimes=1):
         ifUseMPCList = [["MPC", UAV_MultiTargets_MPC], ["noMPC", UAV_MultiTargets_ProbabilitySelectTargetAgent]]
         for i in range(runningTimes):
             newDatasetPath = experimentBase.generateDataset(agentsNum, targetNum, targetMovingWay)
@@ -422,12 +445,12 @@ class Experiment6(ExperimentBase):
 
     def getUAVSceneListInner(self):
         runningTimes = 2
-        self.experiment5Inner(agentsNum=4,
+        self.experiment6Inner(agentsNum=4,
                               targetNum=2,
                               targetMovingWay="randMoving",
                               runningTimes=runningTimes,
                               )
-        self.experiment5Inner(agentsNum=4,
+        self.experiment6Inner(agentsNum=4,
                               targetNum=2,
                               targetMovingWay="movingAsSin",
                               runningTimes=runningTimes,

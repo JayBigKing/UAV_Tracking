@@ -33,10 +33,10 @@ class UAV_MultiTarget_MAS_Base(UAV_MAS_Base):
         }
 
         if statRegisters is None:
-            statRegisters = [self.UAV_MultiTargets_MAS_Stat_numOfTrackingUAVForTarget,
+            statRegisters = ["recordNumOfTrackingUAVForTarget",
                              "recordDisOfUAVsForVisualize",
                              "recordAlertDisOfUAVsForVisualize",
-                             self.UAV_MultiTargets_MAS_Stat_disBetweenTargetAndUAV]
+                             "recordDisBetweenTargetAndUAV"]
         super().__init__(agents, masArgs, terminalHandler, statRegisters,
                          self.__UAV_MULTI_TARGET_MAS_BASE_DEFAULT_STAT_FUNC_DICT)
         self.targetNum = targetNum

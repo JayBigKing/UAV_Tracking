@@ -21,8 +21,17 @@ from optimization.common.ArgsDictValueController import ArgsDictValueController
 
 class UAV_Scene_Base(Scene_Base):
     UAV_SCENE_BASE_DEFAULT_ARGS = {
-        "storeStatDataName": "storeStatData"
+        "storeStatDataName": "storeStatData",
+        "saveFigNameSuffix": "pdf"
     }
+    SCENE_AND_MAS_RECORD_MAP = {
+        "UAV_SCENE_BASE_UAVDisVisualize": "recordDisBetweenTargetAndUAV",
+        "UAV_SCENE_BASE_UAVAlertDisVisualize": "recordDisOfUAVsForVisualize",
+        "UAV_SCENE_BASE_UAVAvgDisStore": "recordDisOfUAVsForVisualize",
+        "UAV_MULTI_TARGET_SCENE_BASE_UAVAlertDisStore": "UAV_MULTI_TARGET_SCENE_BASE_UAVAlertDisStore",
+        "UAV_MULTI_TARGET_SCENE_BASE_UAVFitnessStore": "recordFitness"
+    }
+    initArgs = {"agent": {}, "target": {}, "MAS": {}}
 
     def __init__(self, agentsNum, agentsCls, agentsArgs, optimizerCls, optimizerArgs, targetCls, targetArgs, MAS_Cls,
                  MAS_Args, needRunningTime, targetNum=1, deltaTime=1., figureSavePath=None, statOutputRegisters=None,
@@ -36,6 +45,7 @@ class UAV_Scene_Base(Scene_Base):
             "UAV_SCENE_BASE_UAV_TRAJECTORY_VISUALIZE": self.UAV_SCENE_BASE_UAVTrajectoryVisualize,
             "UAV_SCENE_BASE_UAVDisVisualize": self.UAV_SCENE_BASE_UAVDisVisualize,
             "UAV_SCENE_BASE_UAVAlertDisVisualize": self.UAV_SCENE_BASE_UAVAlertDisVisualize,
+            "UAV_SCENE_BASE_UAVAvgDisStore": self.UAV_SCENE_BASE_UAVAvgDisStore,
             "UAV_MULTI_TARGET_SCENE_BASE_UAVAlertDisStore": self.UAV_SCENE_BASE_UAVAlertDisStore,
             "UAV_MULTI_TARGET_SCENE_BASE_UAVFitnessStore": self.UAV_SCENE_BASE_UAVFitnessStore
         }
@@ -50,9 +60,13 @@ class UAV_Scene_Base(Scene_Base):
                                                            self.UAV_SCENE_BASE_DEFAULT_ARGS,
                                                            onlyUseDefaultKey=True)
 
+        # self.initArgs = {"agent":{}, "target":{}, "MAS":{}}
         self._initAgents(agentsCls, agentsArgs, optimizerCls, optimizerArgs, deltaTime)
         self._initTargets(targetCls, targetArgs, deltaTime)
+
+        self.initArgs["MAS"]["statOutputRegisters"] = statOutputRegisters
         self._initMAS(MAS_Cls, self.agents, MAS_Args, deltaTime)
+        del self.initArgs["MAS"]["statOutputRegisters"]
 
         super().__init__(self.agents, self.multiAgentSystem, needRunningTime, sceneArgs=sceneArgs)
 
@@ -98,9 +112,27 @@ class UAV_Scene_Base(Scene_Base):
                                           movingFuncRegister=targetArgs[i]["movingFuncRegister"],
                                           deltaTime=deltaTime) for i in range(self.targetNum)]
 
+    def _getMASStatRegister(self, sceneRegisters=None, masRegisters=None):
+        if masRegisters is not None:
+            statRegisters = list(masRegisters)
+        else:
+            statRegisters = list()
+
+        if sceneRegisters is not None:
+            for item in sceneRegisters:
+                statRegisters.append(self.SCENE_AND_MAS_RECORD_MAP[item])
+
+        if len(sceneRegisters) == 0:
+            return None
+        else:
+            return list(set(statRegisters))
+
     def _initMAS(self, MAS_Cls, agents, MAS_Args, deltaTime):
+
         self.multiAgentSystem = MAS_Cls(agents=agents,
-                                        MAS_Args=MAS_Args)
+                                        MAS_Args=MAS_Args,
+                                        statRegisters=self._getMASStatRegister(
+                                            sceneRegisters=self.initArgs["MAS"]["statOutputRegisters"]))
 
     def runningFinal(self):
         self.__csvDataLists = []
@@ -131,21 +163,24 @@ class UAV_Scene_Base(Scene_Base):
     following is stat data function output or visualize function
     '''
 
-    def UAV_SCENE_BASE_SimpleVisualizeTrajectory(self, scattersList, nameList, titleName=None, showOriginPoint=False):
+    def UAV_SCENE_BASE_SimpleVisualizeTrajectory(self, scattersList, nameList, titleName=None, showOriginPoint=False,
+                                                 saveFigName=None):
         cd = CoorDiagram()
         if self.figureSavePath is None:
             cd.drawManyScattersInOnePlane(scattersList, nameList=nameList, titleName=titleName,
-                                          showOriginPoint=showOriginPoint)
+                                          showOriginPoint=showOriginPoint, saveFigName=saveFigName,
+                                          saveFigNameSuffix=self.UAV_SCENE_BASE_Args["saveFigNameSuffix"])
         else:
             cd.setStorePath(self.figureSavePath)
             cd.drawManyScattersInOnePlane(scattersList, nameList=nameList, titleName=titleName, ifSaveFig=True,
-                                          showOriginPoint=showOriginPoint)
+                                          showOriginPoint=showOriginPoint, saveFigName=saveFigName,
+                                          saveFigNameSuffix=self.UAV_SCENE_BASE_Args["saveFigNameSuffix"])
 
     def UAV_SCENE_BASE_SimpleStoreStatData(self, scattersList, nameList):
         if self.__statOutputFuncIsDone is True:
             if self.__csvNameLists != [] and self.__csvDataLists != []:
                 saveStatDataPath = "%s_%s" % (
-                self.UAV_SCENE_BASE_Args["storeStatDataName"], time.strftime("%Y%m%d_%H%M%S.csv", time.localtime()))
+                    self.UAV_SCENE_BASE_Args["storeStatDataName"], time.strftime("%Y%m%d_%H%M%S.csv", time.localtime()))
                 if self.csvSavePath[-1] != "/":
                     self.csvSavePath = self.csvSavePath + "/"
 
@@ -185,7 +220,7 @@ class UAV_Scene_Base(Scene_Base):
             nameList.append(r"uav %d" % i)
 
         self.UAV_SCENE_BASE_SimpleVisualizeTrajectory(scattersList, nameList, titleName="uav trajectory",
-                                                      showOriginPoint=True)
+                                                      showOriginPoint=True, saveFigName="Trajectory")
 
     def UAV_SCENE_BASE_UAVDisVisualize(self):
         scattersList = []
@@ -200,7 +235,8 @@ class UAV_Scene_Base(Scene_Base):
                 #     scattersList.append(item.coordinateVector)
                 #     nameList.append(r"uav %d" % i)
 
-                self.UAV_SCENE_BASE_SimpleVisualizeTrajectory(scattersList, nameList, titleName="uav distance between")
+                self.UAV_SCENE_BASE_SimpleVisualizeTrajectory(scattersList, nameList, titleName="uav distance between",
+                                                              saveFigName="uavDisBtw")
             else:
                 raise NotImplementedError("There is no variable named UAVDisVisualizeStat needed"
                                           "when call function %s" % (inspect.stack()[0][3]))
@@ -212,13 +248,26 @@ class UAV_Scene_Base(Scene_Base):
         myLogger.myLogger_Logger().info("%f Gens have over the %s threshold" % (
             alertPercentage, thersholdStr))
         self.UAV_SCENE_BASE_SimpleVisualizeTrajectory(scattersList, nameList,
-                                                      titleName="uav alert distance record")
+                                                      titleName="uav alert distance record",
+                                                      saveFigName="alertDis")
 
     def UAV_SCENE_BASE_UAVAlertDisStore(self):
         nameList = ["alert percentage"]
         _, _, alertPercentage, _ = self.__UAV_SCENE_BASE_UAVAlertDisCalcInner()
 
         self.UAV_SCENE_BASE_SimpleStoreStatData([alertPercentage], nameList)
+
+    def UAV_SCENE_BASE_UAVAvgDisStore(self):
+        scattersList = []
+        nameList = ["UAV Avg Dis"]
+        if hasattr(self.multiAgentSystem, "UAVAvgDisListStat"):
+            for item in self.multiAgentSystem.UAVAvgDisListStat:
+                scattersList.append(item[1])
+
+            self.UAV_SCENE_BASE_SimpleStoreStatData(scattersList, nameList)
+        else:
+            raise NotImplementedError("There is no variable named UAVAvgDisListStat needed"
+                                      "when call function %s" % (inspect.stack()[0][3]))
 
     def UAV_SCENE_BASE_UAVFitnessStore(self):
         nameList = ["fitness"]

@@ -75,9 +75,19 @@ def testDynEC():
     chromosome, bestVal = eb.optimize()
     print(f'best chromosome : {chromosome !r}\r\nbestVal : {bestVal !r}'.format(chromosome=chromosome, bestVal=bestVal))
 
+@clockTester
+def testDynDE():
+    from optimization.EC.dynamicOpt.DE.EC_DynamicOpt_DEMemory import EC_DynamicOpt_DEMemory
+    eb = EC_DynamicOpt_DEMemory(10, 1, [0.], [2 * np.pi], evalFunc3, OptimizationWay.MIN ,
+                                     needEpochTimes=100,
+                                     ECArgs={"borders":[1], "performanceThreshold": 2., "refractoryPeriodLength":1},
+                                     statRegisters=["bestOverGen"])
+
+    chromosome, bestVal, _ = eb.optimize()
+    print(f'best chromosome : {chromosome !r}\r\nbestVal : {bestVal !r}'.format(chromosome=chromosome, bestVal=bestVal))
 
 def main():
-    testDynEC()
+    testDynDE()
 
 if __name__ == "__main__":
     main()

@@ -7,7 +7,7 @@
 @Author  : jay.zhu
 @Time    : 2022/10/10 20:58
 """
-
+from optimization.common.ArgsDictValueController import ArgsDictValueController
 from optimization.EC.EC_WithStat_Base import EC_WithStat_Base
 from optimization.EC.dynamicOpt.EC_ChangeDetect import EC_ChangeDetector_EvaluateSolutions, \
     EC_ChangeDetector_BestSolution
@@ -29,16 +29,18 @@ class EC_DynamicOpt_Base(EC_WithStat_Base):
                  useCuda=False):
         super().__init__(n, dimNum, maxConstraint, minConstraint, evalVars, otimizeWay,
                          needEpochTimes, ECArgs, statRegisters, otherTerminalHandler, useCuda)
-        self.ECArgsDictValueController.update(self.EC_DYNAMIC_OPT_BASE_DEFAULT_ARGS)
+        self.DEOArgDictValueController = ArgsDictValueController(userArgsDict=ECArgs,
+                                                                 defaultArgsDict=self.EC_DYNAMIC_OPT_BASE_DEFAULT_ARGS,
+                                                                 onlyUseDefaultKey=True)
         self.initChangeDetector(changeDetectorRegisters)
 
-        self.refractoryPeriodTick = self.ECArgsDictValueController["refractoryPeriodLength"]
+        self.refractoryPeriodTick = self.DEOArgDictValueController["refractoryPeriodLength"]
         self.actionChangePeriodTick = 0
 
     def initChangeDetector(self, changeDetectorRegisters):
         if isinstance(changeDetectorRegisters, str):
             if self.EC_DYNAMIC_OPT_BASE_DEFAULT_CHANGE_DETECTOR_REG_DICT.get(changeDetectorRegisters):
-                self.changeDetector = self.EC_DYNAMIC_OPT_BASE_DEFAULT_CHANGE_DETECTOR_REG_DICT[changeDetectorRegisters]
+                self.changeDetector = self.EC_DYNAMIC_OPT_BASE_DEFAULT_CHANGE_DETECTOR_REG_DICT[changeDetectorRegisters](self.chromosomes.size)
             else:
                 raise ValueError("no such default change detector"
                                  "maybe you can use a change detector created by yourself")
@@ -87,11 +89,11 @@ class EC_DynamicOpt_Base(EC_WithStat_Base):
         if isChange is True:
             if self.actionChangePeriodTick == 0:
                 self.adaptToEnvironmentWhenChange()
-                self.actionChangePeriodTick = self.ECArgsDictValueController["actionChangePeriodLength"]
+                self.actionChangePeriodTick = self.DEOArgDictValueController["actionChangePeriodLength"]
             else:
                 self.actionChangePeriodTick -= 1
         else:
-            refractoryPeriodLength = self.ECArgsDictValueController["refractoryPeriodLength"]
+            refractoryPeriodLength = self.DEOArgDictValueController["refractoryPeriodLength"]
             if self.refractoryPeriodTick < refractoryPeriodLength:
                 self.refractoryPeriodTick += 1
                 self.adaptToEnvironmentWhenRefractoryPeriod()

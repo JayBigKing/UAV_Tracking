@@ -20,12 +20,14 @@ from Scene.UAV_Scene.multiTarget.UAV_MultiTarget_UsingDatasetScene import UAV_Mu
 from MAS.Agents.UAV_Agent import UAV_Dataset_TargetAgent
 from MAS.Agents.UAV_Agent.multiTarget.UAV_MultiTargets_ProbabilitySelectTargetAgent import \
     UAV_MultiTargets_ProbabilitySelectTargetAgent
+from optimization.EC.EC_Base import EC_SelectType
 from optimization.EC.dynamicOpt.EC_DynamicOpt_InitAndHyperMutation import EC_DynamicOpt_InitAndHyperMutation
 from optimization.EC.dynamicOpt.EC_DynamicOpt_HMMemory import EC_DynamicOpt_HMMemory
 from optimization.PSO.PSO_Tracking import PSO_Tracking
 from optimization.EC.DiffEC.EC_DiffEC_Tracking_ADE import EC_DiffEC_Tracking_ADE
 from optimization.EC.DiffEC.EC_DiffEC_Tracking_DE import EC_DiffEC_Tracking_DE
 from optimization.EC.EC_Tracking import EC_Tracking
+from optimization.EC.dynamicOpt.DE.EC_DynamicOpt_DEMemory import EC_DynamicOpt_DEMemory
 from MAS.MultiAgentSystem.UAV_MAS.multiTarget.UAV_MultiTarget_PredictMAS import UAV_MultiTarget_PredictMAS
 from MAS.MultiAgentSystem.UAV_MAS.multiTarget.UAV_MultiTarget_PredictAndNashMAS import UAV_MultiTarget_PredictAndNashMAS
 
@@ -61,6 +63,24 @@ DYN_EC_OPTIMIZATION_COMPUTATION_ARGS = {
     "performanceThreshold": 3,
     "refractoryPeriodLength": 2,
     "borders": [0, 1],
+    "EC_ChoosingType": EC_SelectType.TOUR,
+}
+
+DYN_DE_OPTIMIZATION_COMPUTATION_ARGS = {
+    "floatMutationOperateArg": 0.3,
+    "floatCrossoverAlpha": 0.5,
+    "mutationProbability": 0.05,
+    "fittingMinDenominator": 0.2,
+
+    "DiffCR0": 0.1,
+    "DiffCR1": 0.6,
+    "DiffF0": 0.1,
+    "DiffF1": 0.6,
+
+    "performanceThreshold": 3,
+    "refractoryPeriodLength": 2,
+    "bestArchivesMaxSize": 10,
+    "borders": [0, 1],
 }
 
 NO_DYN_EC_OPTIMIZATION_COMPUTATION_ARGS = {
@@ -70,6 +90,7 @@ NO_DYN_EC_OPTIMIZATION_COMPUTATION_ARGS = {
     "fittingMinDenominator": 0.2,
 
     "borders": [0, 1],
+    "EC_ChoosingType": EC_SelectType.TOUR,
 }
 
 OPTIMIZATION_AND_ARGS_DICT = {
@@ -92,6 +113,10 @@ OPTIMIZATION_AND_ARGS_DICT = {
     "noDynEC": {
         "class": EC_Tracking,
         "computationArgs": NO_DYN_EC_OPTIMIZATION_COMPUTATION_ARGS,
+    },
+    "DynDE": {
+        "class": EC_DynamicOpt_DEMemory,
+        "computationArgs":DYN_DE_OPTIMIZATION_COMPUTATION_ARGS,
     }
 }
 
@@ -138,6 +163,7 @@ S_DEFAULT_MAS_ARGS = {
     "optimizationNeedTimes": 0,
     "allCountDiffNashBalanceValue": 5e-1,
     "oneDiffNashBalanceValue": 1e-4,
+    "usingMultiThread": True,
     "predictVelocityLen": S_DEFAULT_PREDICT_VELOCITY_LEN,
     "usePredictVelocityLen": S_DEFAULT_USE_PREDICT_VELOCITY_LEN,
     "waitingInitPredictorTime": 0,

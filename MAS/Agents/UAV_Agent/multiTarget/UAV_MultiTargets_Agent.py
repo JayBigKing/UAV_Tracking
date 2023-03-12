@@ -59,7 +59,7 @@ class UAV_MultiTarget_Agent(UAV_Agent):
         self.targetPositionList = self.predictTargetMoving(kwargs["targetPositionList"])
         self.numOfTrackingUAVForTargetList = kwargs["numOfTrackingUAVForTargetList"]
 
-        self.optimizer.ECDynOptHyperMutation_ECArgsDictValueController["performanceThreshold"] = 1 / (
+        self.optimizer.DEOArgDictValueController["performanceThreshold"] = 1 / (
                 calcDistance(self.positionState, self.targetPositionList[self.trackingTargetIndex][0]) *
                 self.optimizer.ECArgsDictValueController["fittingMinDenominator"])
 

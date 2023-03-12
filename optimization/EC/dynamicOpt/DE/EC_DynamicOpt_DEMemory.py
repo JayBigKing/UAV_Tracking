@@ -3,26 +3,42 @@
 
 """
 @Project : UAV_Tracking
-@File    : EC_DynamicOpt_HMMemory.py
+@File    : EC_DynamicOpt_DEMemory.py
 @Author  : jay.zhu
-@Time    : 2022/12/28 17:47
+@Time    : 2023/2/19 11:52
 """
 import numpy as np
 import heapq
-from optimization.EC.dynamicOpt.EC_DynamicOpt_HyperMutation import EC_DynamicOpt_HyperMutation
+from optimization.common.ArgsDictValueController import ArgsDictValueController
+from optimization.EC.dynamicOpt.EC_ChangeDetect import EC_ChangeDetector_PerformanceThresh
+from optimization.EC.dynamicOpt.DE.EC_DynamicOpt_DEBase import EC_DynamicOpt_DEBase
 
-class EC_DynamicOpt_HMMemory(EC_DynamicOpt_HyperMutation):
-    EC_DYNAMIC_OPT_HMMEMORY_DEFAULT_ARGS = {
+
+class EC_DynamicOpt_DEMemory(EC_DynamicOpt_DEBase):
+    EC_DYNAMIC_OPT_DE_MEMORY_DEFAULT_CHANGE_DETECTOR_REG_DICT = {
+        "performanceThreshold": 3,
         "bestArchivesMaxSize": 10,
     }
+
     def __init__(self, n, dimNum, maxConstraint, minConstraint, evalVars, otimizeWay, needEpochTimes, ECArgs,
                  statRegisters=None, changeDetectorRegisters=None, otherTerminalHandler=None,
                  useCuda=False):
-        super().__init__(n, dimNum, maxConstraint, minConstraint, evalVars, otimizeWay, needEpochTimes, ECArgs,
-                         statRegisters, changeDetectorRegisters, otherTerminalHandler, useCuda)
-        self.DEOArgDictValueController.update(newDict=self.EC_DYNAMIC_OPT_HMMEMORY_DEFAULT_ARGS, newUserDict=ECArgs)
-        self.bestArchives = []
 
+        if changeDetectorRegisters is None:
+            if ECArgs.get("performanceThreshold"):
+                changeDetectorRegisters = EC_ChangeDetector_PerformanceThresh(n, {
+                    "performanceThreshold": ECArgs["performanceThreshold"], "fittingCmpFunc": self.cmpFitting})
+            else:
+                changeDetectorRegisters = EC_ChangeDetector_PerformanceThresh(n, {
+                    "performanceThreshold": self.EC_DYNAMIC_OPT_DE_MEMORY_DEFAULT_CHANGE_DETECTOR_REG_DICT[
+                        "performanceThreshold"], "fittingCmpFunc": self.cmpFitting})
+
+        super().__init__(n, dimNum, maxConstraint, minConstraint, evalVars, otimizeWay,
+                         needEpochTimes, ECArgs, statRegisters, changeDetectorRegisters,
+                         otherTerminalHandler, useCuda)
+
+        self.DEOArgDictValueController.update(newDict=self.EC_DYNAMIC_OPT_DE_MEMORY_DEFAULT_CHANGE_DETECTOR_REG_DICT, newUserDict=ECArgs)
+        self.bestArchives = []
 
     def select(self):
         super().select()

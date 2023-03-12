@@ -88,23 +88,30 @@ class UAV_MAS_Base(MAS_WithStat_Base):
         if hasattr(self, '__recordDisOfUAVsInnerCalledDict') is False:
             self.__recordDisOfUAVsInnerCalledDict = dict()
 
+        if hasattr(self, 'UAVAvgDisListStat') is False:
+            self.UAVAvgDisListStat = list()
+
         if self.__recordDisOfUAVsInnerCalledDict.get(self.nowRunningGen) is not None:
             return
         else:
             self.__recordDisOfUAVsInnerCalledDict[self.nowRunningGen] = True
 
-        for index, item in enumerate(self.agents):
-            for j in range(agentLen):
-                if index != j:
-                    if j < index:
-                        self.UAVDisMatrix[index, j] = self.UAVDisMatrix[j, index]
-                    else:
-                        self.UAVDisMatrix[index, j] = calcDistance(item.positionState[0: 2],
-                                                                   self.agents[j].positionState[0: 2])
+        if len(self.UAVAvgDisListStat) == self.nowRunningGen:
+            UAVAvgDisThisEpoch = 0.
+            for index, item in enumerate(self.agents):
+                for j in range(agentLen):
+                    if index != j:
+                        if j < index:
+                            self.UAVDisMatrix[index, j] = self.UAVDisMatrix[j, index]
+                        else:
+                            self.UAVDisMatrix[index, j] = calcDistance(item.positionState[0: 2],
+                                                                       self.agents[j].positionState[0: 2])
+                        UAVAvgDisThisEpoch += self.UAVDisMatrix[index, j]
+                        self.UAVDisStatMatrix[index, j, 0] += self.UAVDisMatrix[index, j]
+                        self.UAVDisStatMatrix[index, j, 1] = min(self.UAVDisMatrix[index, j],
+                                                                 self.UAVDisStatMatrix[index, j, 1])
+            self.UAVAvgDisListStat.append([float(self.nowRunningGen), UAVAvgDisThisEpoch / (agentLen * (agentLen - 1))])
 
-                    self.UAVDisStatMatrix[index, j, 0] += self.UAVDisMatrix[index, j]
-                    self.UAVDisStatMatrix[index, j, 1] = min(self.UAVDisMatrix[index, j],
-                                                             self.UAVDisStatMatrix[index, j, 1])
     """
     @brief: print out distance matrix in every Gen
     """

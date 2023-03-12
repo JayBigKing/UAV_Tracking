@@ -8,16 +8,22 @@
 @Time    : 2022/11/5 20:05
 """
 import numpy as np
+from copy import deepcopy
 from optimization.common.ArgsDictValueController import ArgsDictValueController
+from multiprocessing import Process, Manager, Semaphore
 from MAS.MultiAgentSystem.MAS_MultiThread_Base import MAS_MultiThread_Base
 from MAS.MultiAgentSystem.UAV_MAS.multiTarget.UAV_MultiTarget_PredictMAS import UAV_MultiTarget_PredictMAS
+
 
 class UAV_MultiTarget_PredictAndNashMAS(UAV_MultiTarget_PredictMAS):
     __UAV_MULTITARGET_PREDICTANDNASHMAS_DEFAULT_ARGS = {
         "allCountDiffNashBalanceValue": 5e-1,
-        "oneDiffNashBalanceValue": 1e-4
+        "oneDiffNashBalanceValue": 1e-4,
+        "usingMultiThread": False
     }
-    def __init__(self, agents, masArgs, targetNum, terminalHandler=None, predictorCls=None, statRegisters=None, deltaTime=1.):
+
+    def __init__(self, agents, masArgs, targetNum, terminalHandler=None, predictorCls=None, statRegisters=None,
+                 deltaTime=1.):
         super().__init__(agents=agents,
                          masArgs=masArgs,
                          targetNum=targetNum,
@@ -39,16 +45,57 @@ class UAV_MultiTarget_PredictAndNashMAS(UAV_MultiTarget_PredictMAS):
         self.firstNashOptimizationFlag = True
         super().optimization()
 
+    def PredictAndNashMAS_CallAgentProcess(self, agent, index, argDict, managerDict, loadAgentSem, killProSem):
+        if argDict.get("init") is not None and argDict["init"] is True:
+            agent.optimization(init=argDict["init"])
+        else:
+            agent.optimization()
+
+        managerDict[index] = deepcopy(agent)
+        loadAgentSem.release()
+        killProSem.acquire()
+
+
+    def PredictAndNashMAS_OptimizationInnerForAgents(self, **kwargs):
+        if self.NashMas_Args["usingMultiThread"] is False:
+            for agent in self.agents:
+                agent.optimization(**kwargs)
+        else:
+            with Manager() as manager:
+                dictList = [manager.dict() for i in self.agents]
+                loadAgentSem = Semaphore(len(self.agents))
+                killProSemList = [Semaphore(1) for i in self.agents]
+
+                for i in range(len(self.agents)):
+                    loadAgentSem.acquire()
+
+                processList = [
+                    Process(target=self.PredictAndNashMAS_CallAgentProcess,
+                            args=(agent, index, {"init": kwargs["init"] if kwargs.get("init") is not None else False},
+                                  dictList[index], loadAgentSem, killProSemList[index])) for
+                    index, agent in enumerate(self.agents)]
+
+                for p in processList:
+                    p.start()
+
+                for i in range(len(self.agents)):
+                    loadAgentSem.acquire()
+
+                for index, newAgent in enumerate(dictList):
+                    self.agents[index] = newAgent[index]
+
+                for killProSem in killProSemList:
+                    killProSem.release()
+
+            manager.join()
 
     def optimizationInner(self):
         self.communication()
         if self.firstNashOptimizationFlag is True:
-            for agent in self.agents:
-                agent.optimization(init=True)
+            self.PredictAndNashMAS_OptimizationInnerForAgents(init=True)
             self.firstNashOptimizationFlag = False
         else:
-            for agent in self.agents:
-                agent.optimization()
+            self.PredictAndNashMAS_OptimizationInnerForAgents()
 
     def communication(self):
         if self.firstCommunicationFlag is True:
@@ -59,12 +106,10 @@ class UAV_MultiTarget_PredictAndNashMAS(UAV_MultiTarget_PredictMAS):
         for item in predictVelocityList:
             numOfTrackingUAVForTargetList[int(item[0])] += 1.
 
-
         for index, item in enumerate(self.agents):
             item.recvMeg(agentCrowd=self.agentCrowd, selfIndex=index,
                          targetPositionList=self.targetPositionList,
                          numOfTrackingUAVForTargetList=numOfTrackingUAVForTargetList)
-
 
     def terminalHandler(self, agents=None, initFlag=False):
         if initFlag is True:
@@ -96,4 +141,3 @@ class UAV_MultiTarget_PredictAndNashMAS(UAV_MultiTarget_PredictMAS):
                 else:
                     for index, item in enumerate(agents):
                         self.lastAgentOptimizationRes[index] = item.predictVelocityList
-
