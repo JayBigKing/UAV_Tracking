@@ -21,8 +21,13 @@ def shouldContinue(nowEpochTime, bestFittingValue, bestAimFuncValue, needEpochTi
         return False, nowEpochTime
 
 
-def limitValue(value, dimIndex, maxConstraint, minConstraint):
-    return min(maxConstraint[dimIndex], max(value, minConstraint[dimIndex]))
+def limitValue(value, dimIndex, maxConstraint, minConstraint, borders=None):
+    if borders is None:
+        return min(maxConstraint[dimIndex], max(value, minConstraint[dimIndex]))
+    elif len(borders) > dimIndex and borders[dimIndex] == 1:
+        return min(maxConstraint[dimIndex], max(value, minConstraint[dimIndex]))
+    else:
+        return value
 
 def callAimFunc(solution, evalVars):
     return evalVars(solution)

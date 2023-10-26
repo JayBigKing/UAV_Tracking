@@ -24,6 +24,7 @@ from optimization.EC.EC_Base import EC_SelectType
 from optimization.EC.dynamicOpt.EC_DynamicOpt_InitAndHyperMutation import EC_DynamicOpt_InitAndHyperMutation
 from optimization.EC.dynamicOpt.EC_DynamicOpt_HMMemory import EC_DynamicOpt_HMMemory
 from optimization.PSO.PSO_Tracking import PSO_Tracking
+from optimization.GWO.GWO_IGWO_PENGTracking import GWO_IGWO_PENGTracking
 from optimization.EC.DiffEC.EC_DiffEC_Tracking_ADE import EC_DiffEC_Tracking_ADE
 from optimization.EC.DiffEC.EC_DiffEC_Tracking_DE import EC_DiffEC_Tracking_DE
 from optimization.EC.EC_Tracking import EC_Tracking
@@ -93,6 +94,15 @@ NO_DYN_EC_OPTIMIZATION_COMPUTATION_ARGS = {
     "EC_ChoosingType": EC_SelectType.TOUR,
 }
 
+IGWO_OPTIMIZATION_COMPUTATION_ARGS = {
+    "fittingMinDenominator": 0.2,
+    "borders": [0, 1],
+    "updateInnerEpochTimes": 1,
+    "b1": 0.7,
+    "b2": 0.3,
+    "selectNewPosPro": 0.4
+}
+
 OPTIMIZATION_AND_ARGS_DICT = {
     "dynEC": {
         "class": EC_DynamicOpt_HMMemory,
@@ -117,7 +127,15 @@ OPTIMIZATION_AND_ARGS_DICT = {
     "DynDE": {
         "class": EC_DynamicOpt_DEMemory,
         "computationArgs":DYN_DE_OPTIMIZATION_COMPUTATION_ARGS,
-    }
+    },
+    "IGWO":{
+        "class": GWO_IGWO_PENGTracking,
+        "computationArgs":IGWO_OPTIMIZATION_COMPUTATION_ARGS,
+    },
+    "noNash": {
+        "class": EC_DynamicOpt_HMMemory,
+        "computationArgs": DYN_EC_OPTIMIZATION_COMPUTATION_ARGS,
+    },
 }
 
 MAS_AND_ARGS_DICT = {
@@ -163,7 +181,7 @@ S_DEFAULT_MAS_ARGS = {
     "optimizationNeedTimes": 0,
     "allCountDiffNashBalanceValue": 5e-1,
     "oneDiffNashBalanceValue": 1e-4,
-    "usingMultiThread": True,
+    "usingMultiThread": False,
     "predictVelocityLen": S_DEFAULT_PREDICT_VELOCITY_LEN,
     "usePredictVelocityLen": S_DEFAULT_USE_PREDICT_VELOCITY_LEN,
     "waitingInitPredictorTime": 0,

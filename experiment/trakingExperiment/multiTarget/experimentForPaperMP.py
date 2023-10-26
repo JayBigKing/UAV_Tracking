@@ -178,23 +178,28 @@ class Experiment1(ExperimentBase):
         return self.__class__.__name__
 
     def getUAVSceneListInner(self):
-        movingWayList = [["straight", "movingStraightly"], ["sin", "movingAsSin"], ["rand", "randMoving"]]
+        # movingWayList = [["straight", "movingStraightly"], ["sin", "movingAsSin"], ["rand", "randMoving"]]
+        movingWayList = [ ["sin", "movingAsSin"], ["rand", "randMoving"]]
         for item in movingWayList:
-            figureSavePathKeyword = "%s%s_%s" % (saveFigPathPrefix, self.nowClsName, item[0])
-            # myLogger.myLogger_Logger().info("experiment1 : %s start" % item[0])
-            uav_scene = experimentBase.experimentBase(agentCls=UAV_MultiTargets_ProbabilitySelectTargetAgent,
-                                                      getTargetTrajectoryWay="online",
-                                                      masKey="PredictAndNashMAS",
-                                                      optimizerKey="dynEC",
-                                                      agentsNum=4,
-                                                      targetNum=2,
-                                                      targetMovingWay=item[1],
-                                                      figureSavePathKeyword=figureSavePathKeyword,
-                                                      userStatOutputRegisters=[],
-                                                      uavSceneCls=ExperimentBase.UAV_MTMP_PredictScene,
-                                                      sceneArgs={"ifPrintRunningEpoch": False,
-                                                                 "storeStatDataName":"%s"%(item[0])})
-            self.sceneList.append(uav_scene)
+            for i in range(3):
+                figureSavePathKeyword = "%s%s_%s" % (saveFigPathPrefix, self.nowClsName, item[0])
+                # myLogger.myLogger_Logger().info("experiment1 : %s start" % item[0])
+                uav_scene = experimentBase.experimentBase(agentCls=UAV_MultiTargets_MPC,
+                                                          getTargetTrajectoryWay="online",
+                                                          masKey="PredictAndNashMAS",
+                                                          optimizerKey="dynEC",
+                                                          agentsNum=4,
+                                                          targetNum=2,
+                                                          targetMovingWay=item[1],
+                                                          figureSavePathKeyword=figureSavePathKeyword,
+                                                          userStatOutputRegisters=[
+                                                              "UAV_MULTI_TARGET_SCENE_BASE_AVG_DIS_STORE",
+                                                              "UAV_SCENE_BASE_UAVMinDisStore",
+                                                              "UAV_MULTI_TARGET_SCENE_BASE_TARGET_TRACKED_NUM_VARIANCE_STORE",],
+                                                          uavSceneCls=ExperimentBase.UAV_MTMP_PredictScene,
+                                                          sceneArgs={"ifPrintRunningEpoch": False,
+                                                                     "storeStatDataName":"%s"%(item[0])},)
+                self.sceneList.append(uav_scene)
 
 
 class Experiment2(ExperimentBase):
@@ -290,7 +295,7 @@ class Experiment3(ExperimentBase):
                                                               "UAV_MULTI_TARGET_SCENE_BASE_AVG_DIS_STORE",
                                                               "UAV_MULTI_TARGET_SCENE_BASE_AVG_DIS_STABILITY_STORE",
                                                               "UAV_MULTI_TARGET_SCENE_BASE_UAVFitnessStore",
-                                                              "UAV_SCENE_BASE_UAVAvgDisStore",
+                                                              "UAV_SCENE_BASE_UAVMinDisStore",
                                                               "UAV_MULTI_TARGET_SCENE_BASE_UAVAlertDisStore",
                                                               "UAV_MULTI_TARGET_SCENE_BASE_TARGET_TRACKED_NUM_VARIANCE_STORE",
                                                               "UAV_MULTI_TARGET_SCENE_BASE_EFFECTIVE_TIME_FOR_TARGET_STORE"
@@ -324,13 +329,25 @@ class Experiment4(ExperimentBase):
         "ADE": UAV_MultiTargets_ProbabilitySelectTargetAgent,
         "DE": UAV_MultiTargets_ProbabilitySelectTargetAgent,
         "PSO": UAV_MultiTargets_ProbabilitySelectTargetAgent,
-        "DynDE": UAV_MultiTargets_MPC
+        "DynDE": UAV_MultiTargets_MPC,
+        "IGWO": UAV_MultiTargets_ProbabilitySelectTargetAgent,
+        "noNash": UAV_MultiTargets_MPC,
+    }
+    __USING_MAS_DICT = {
+        "dynEC": "PredictAndNashMAS",
+        "noDynEC": "PredictAndNashMAS",
+        "ADE": "PredictAndNashMAS",
+        "DE": "PredictAndNashMAS",
+        "PSO": "PredictAndNashMAS",
+        "DynDE": "PredictAndNashMAS",
+        "IGWO": "PredictAndNashMAS",
+        "noNash": "PredictMAS",
     }
     def getClsName(self):
         return self.__class__.__name__
 
     def experiment4Inner(self, agentsNum=4, targetNum=2, targetMovingWay="randMoving", runningTimes=1):
-        experimentOptimizerList = ["dynEC", "noDynEC", "ADE", "DE", "PSO"]
+        experimentOptimizerList = ["dynEC", "noDynEC", "ADE", "DE", "PSO", "IGWO", "noNash"]
 
         for i in range(runningTimes):
             newDatasetPath = experimentBase.generateDataset(agentsNum, targetNum, targetMovingWay)
@@ -338,7 +355,7 @@ class Experiment4(ExperimentBase):
                 figureSavePathKeyword = "%s%s_%s" % (saveFigPathPrefix, self.nowClsName, item)
                 uav_scene = experimentBase.experimentBase(agentCls=self.__USING_AGENT_DICT[item],
                                                           getTargetTrajectoryWay="dataset",
-                                                          masKey="PredictAndNashMAS",
+                                                          masKey=self.__USING_MAS_DICT[item],
                                                           optimizerKey=item,
                                                           datasetPath=newDatasetPath,
                                                           figureSavePathKeyword=figureSavePathKeyword,
@@ -349,7 +366,7 @@ class Experiment4(ExperimentBase):
                                                               "UAV_MULTI_TARGET_SCENE_BASE_AVG_DIS_STORE",
                                                               "UAV_MULTI_TARGET_SCENE_BASE_AVG_DIS_STABILITY_STORE",
                                                               "UAV_MULTI_TARGET_SCENE_BASE_UAVFitnessStore",
-                                                              "UAV_SCENE_BASE_UAVAvgDisStore",
+                                                              "UAV_SCENE_BASE_UAVMinDisStore",
                                                               "UAV_MULTI_TARGET_SCENE_BASE_UAVAlertDisStore",
                                                               "UAV_MULTI_TARGET_SCENE_BASE_TARGET_TRACKED_NUM_VARIANCE_STORE",
                                                               "UAV_MULTI_TARGET_SCENE_BASE_EFFECTIVE_TIME_FOR_TARGET_STORE"

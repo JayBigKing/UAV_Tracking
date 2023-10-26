@@ -28,10 +28,13 @@ class UAV_Scene_Base(Scene_Base):
         "UAV_SCENE_BASE_UAVDisVisualize": "recordDisBetweenTargetAndUAV",
         "UAV_SCENE_BASE_UAVAlertDisVisualize": "recordDisOfUAVsForVisualize",
         "UAV_SCENE_BASE_UAVAvgDisStore": "recordDisOfUAVsForVisualize",
+        "UAV_SCENE_BASE_UAVMinDisStore": "recordDisOfUAVsForVisualize",
         "UAV_MULTI_TARGET_SCENE_BASE_UAVAlertDisStore": "UAV_MULTI_TARGET_SCENE_BASE_UAVAlertDisStore",
         "UAV_MULTI_TARGET_SCENE_BASE_UAVFitnessStore": "recordFitness"
     }
     initArgs = {"agent": {}, "target": {}, "MAS": {}}
+
+    NARROW_FIGURE_SIZE = (6, 2.8)
 
     def __init__(self, agentsNum, agentsCls, agentsArgs, optimizerCls, optimizerArgs, targetCls, targetArgs, MAS_Cls,
                  MAS_Args, needRunningTime, targetNum=1, deltaTime=1., figureSavePath=None, statOutputRegisters=None,
@@ -46,6 +49,7 @@ class UAV_Scene_Base(Scene_Base):
             "UAV_SCENE_BASE_UAVDisVisualize": self.UAV_SCENE_BASE_UAVDisVisualize,
             "UAV_SCENE_BASE_UAVAlertDisVisualize": self.UAV_SCENE_BASE_UAVAlertDisVisualize,
             "UAV_SCENE_BASE_UAVAvgDisStore": self.UAV_SCENE_BASE_UAVAvgDisStore,
+            "UAV_SCENE_BASE_UAVMinDisStore": self.UAV_SCENE_BASE_UAVMinDisStore,
             "UAV_MULTI_TARGET_SCENE_BASE_UAVAlertDisStore": self.UAV_SCENE_BASE_UAVAlertDisStore,
             "UAV_MULTI_TARGET_SCENE_BASE_UAVFitnessStore": self.UAV_SCENE_BASE_UAVFitnessStore
         }
@@ -163,18 +167,21 @@ class UAV_Scene_Base(Scene_Base):
     following is stat data function output or visualize function
     '''
 
-    def UAV_SCENE_BASE_SimpleVisualizeTrajectory(self, scattersList, nameList, titleName=None, showOriginPoint=False,
-                                                 saveFigName=None):
+    def UAV_SCENE_BASE_SimpleVisualizeTrajectory(self, scattersList, nameList, labelNames=None, titleName=None, showOriginPoint=False,
+                                                 saveFigName=None, ifScatterPlotPoint=False, figureArgs=None):
         cd = CoorDiagram()
         if self.figureSavePath is None:
-            cd.drawManyScattersInOnePlane(scattersList, nameList=nameList, titleName=titleName,
+            cd.drawManyScattersInOnePlane(scattersList, nameList=nameList, titleName=titleName,labelNames=labelNames,
                                           showOriginPoint=showOriginPoint, saveFigName=saveFigName,
-                                          saveFigNameSuffix=self.UAV_SCENE_BASE_Args["saveFigNameSuffix"])
+                                          saveFigNameSuffix=self.UAV_SCENE_BASE_Args["saveFigNameSuffix"],
+                                          ifScatterPlotPoint=ifScatterPlotPoint, figureArgs=figureArgs)
         else:
             cd.setStorePath(self.figureSavePath)
-            cd.drawManyScattersInOnePlane(scattersList, nameList=nameList, titleName=titleName, ifSaveFig=True,
+            cd.drawManyScattersInOnePlane(scattersList, nameList=nameList, titleName=titleName,
+                                          labelNames=labelNames, ifSaveFig=True,
                                           showOriginPoint=showOriginPoint, saveFigName=saveFigName,
-                                          saveFigNameSuffix=self.UAV_SCENE_BASE_Args["saveFigNameSuffix"])
+                                          saveFigNameSuffix=self.UAV_SCENE_BASE_Args["saveFigNameSuffix"],
+                                          ifScatterPlotPoint=ifScatterPlotPoint, figureArgs=figureArgs)
 
     def UAV_SCENE_BASE_SimpleStoreStatData(self, scattersList, nameList):
         if self.__statOutputFuncIsDone is True:
@@ -219,8 +226,9 @@ class UAV_Scene_Base(Scene_Base):
             scattersList.append(item.coordinateVector)
             nameList.append(r"uav %d" % i)
 
-        self.UAV_SCENE_BASE_SimpleVisualizeTrajectory(scattersList, nameList, titleName="uav trajectory",
-                                                      showOriginPoint=True, saveFigName="Trajectory")
+        self.UAV_SCENE_BASE_SimpleVisualizeTrajectory(scattersList=scattersList, nameList=nameList, titleName="uav trajectory",
+                                                      showOriginPoint=True, saveFigName="Trajectory",
+                                                      ifScatterPlotPoint=True)
 
     def UAV_SCENE_BASE_UAVDisVisualize(self):
         scattersList = []
@@ -235,8 +243,9 @@ class UAV_Scene_Base(Scene_Base):
                 #     scattersList.append(item.coordinateVector)
                 #     nameList.append(r"uav %d" % i)
 
-                self.UAV_SCENE_BASE_SimpleVisualizeTrajectory(scattersList, nameList, titleName="uav distance between",
-                                                              saveFigName="uavDisBtw")
+                self.UAV_SCENE_BASE_SimpleVisualizeTrajectory(scattersList=scattersList, nameList=nameList, titleName="uav distance between",
+                                                              saveFigName="uavDisBtw",
+                                                              figureArgs={"figSize": self.NARROW_FIGURE_SIZE})
             else:
                 raise NotImplementedError("There is no variable named UAVDisVisualizeStat needed"
                                           "when call function %s" % (inspect.stack()[0][3]))
@@ -247,9 +256,8 @@ class UAV_Scene_Base(Scene_Base):
         scattersList, nameList, alertPercentage, thersholdStr = self.__UAV_SCENE_BASE_UAVAlertDisCalcInner()
         myLogger.myLogger_Logger().info("%f Gens have over the %s threshold" % (
             alertPercentage, thersholdStr))
-        self.UAV_SCENE_BASE_SimpleVisualizeTrajectory(scattersList, nameList,
-                                                      titleName="uav alert distance record",
-                                                      saveFigName="alertDis")
+        self.UAV_SCENE_BASE_SimpleVisualizeTrajectory(scattersList=scattersList, nameList=nameList,
+                                                      titleName="uav alert distance record", saveFigName="alertDis")
 
     def UAV_SCENE_BASE_UAVAlertDisStore(self):
         nameList = ["alert percentage"]
@@ -269,14 +277,31 @@ class UAV_Scene_Base(Scene_Base):
             raise NotImplementedError("There is no variable named UAVAvgDisListStat needed"
                                       "when call function %s" % (inspect.stack()[0][3]))
 
+    def UAV_SCENE_BASE_UAVMinDisStore(self):
+        scattersList = []
+        nameList = ["UAV Min Dis"]
+        if hasattr(self.multiAgentSystem, "UAVMinDisListStat"):
+            for item in self.multiAgentSystem.UAVMinDisListStat:
+                scattersList.append(item[1])
+
+            self.UAV_SCENE_BASE_SimpleStoreStatData(scattersList, nameList)
+        else:
+            raise NotImplementedError("There is no variable named UAVMinDisListStat needed"
+                                      "when call function %s" % (inspect.stack()[0][3]))
+
     def UAV_SCENE_BASE_UAVFitnessStore(self):
-        nameList = ["fitness"]
+        scattersList = []
+        nameList = ["fitness", "stability of fitness"]
         try:
             if hasattr(self.multiAgentSystem, "fitnessStat"):
-                scattersList = [item[1] for item in self.multiAgentSystem.fitnessStat]
+                scattersList.append([item[1] for item in self.multiAgentSystem.fitnessStat])
+                scattersList.append([np.average(
+                    [abs(1 / self.multiAgentSystem.fitnessStat[index][1] - 1 /
+                         self.multiAgentSystem.fitnessStat[index - 1][1]) for
+                     index in range(1, len(self.multiAgentSystem.fitnessStat))])])
 
-                self.UAV_SCENE_BASE_SimpleStoreStatData(scattersList, nameList)
-
+                for i in range(len(nameList)):
+                    self.UAV_SCENE_BASE_SimpleStoreStatData(scattersList[i], [nameList[i]])
             else:
                 raise NotImplementedError("There is no variable named fitnessStat needed"
                                           "when call function %s" % (inspect.stack()[0][3]))
