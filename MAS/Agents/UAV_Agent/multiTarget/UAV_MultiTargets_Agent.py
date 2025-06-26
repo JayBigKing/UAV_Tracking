@@ -178,6 +178,14 @@ class UAV_MultiTarget_Agent(UAV_Agent):
 
         if self.lastTrackingTargetIndex == self.testTrackingTargetIndex:
             return 0.
+
+        numOfTrackingUAVForTargetList = np.array(self.numOfTrackingUAVForTargetList)
+        numOfTrackingUAVForTargetList[self.testTrackingTargetIndex] += 1.
+        if numOfTrackingUAVForTargetList[self.trackingTargetIndex] >= 1.:
+            numOfTrackingUAVForTargetList[self.trackingTargetIndex] -= 1.
+        if np.var(numOfTrackingUAVForTargetList) < np.var(self.numOfTrackingUAVForTargetList):
+            return 0.
+
         lastTargetPosition = self.targetPositionList[self.lastTrackingTargetIndex][0]
         lastDisFromTarget = np.square(self.positionState[0] - lastTargetPosition[0]) + np.square(
             self.positionState[1] - lastTargetPosition[1])

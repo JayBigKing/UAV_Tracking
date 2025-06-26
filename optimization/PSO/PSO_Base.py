@@ -27,7 +27,8 @@ class PSO_Base:
         "w": 0.6,
         "c1": 0.6,
         "c2": 0.3,
-        "velocityFactor": 0.1
+        "velocityFactor": 0.1,
+        "borders": [0, 1],
     }
 
     def __init__(self, n, dimNum, positionMaxConstraint, positionMinConstraint, evalVars, optimizeWay, needEpochTimes,
@@ -195,7 +196,5 @@ class PSO_Base:
                 self.BEST_IN_ALL_GEN_DIM_INDEX] = 0., 0.
 
     def limitParticleValue(self, particleValue, dimIndex):
-        if self.borders == [] or self.borders[dimIndex] != 1:
-            return particleValue
-        else:
-            return ocf.limitValue(particleValue, dimIndex, self.positionMaxConstraint, self.positionMinConstraint)
+        return ocf.limitValue(particleValue, dimIndex, self.positionMaxConstraint, self.positionMinConstraint,
+                              self.borders)

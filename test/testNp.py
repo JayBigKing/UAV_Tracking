@@ -134,6 +134,13 @@ def test17():
     l0 = [[[0, 1], [3, 6]], [[-0, -1], [-3, -6]]]
     print(l0[0])
 
+def test18():
+    n0 = np.array([[1., .5],
+                   [8., 9.],
+                   [.9, .89]])
+    print(n0)
+    print(np.min(n0, axis=0))
+    print(np.min(n0, axis=1))
 def main():
     # test1()
     # test2()
@@ -151,7 +158,8 @@ def main():
     # test14()
     # test15()
     # test16()
-    test17()
+    # test17()
+    test18()
 
 
 if __name__ == "__main__":

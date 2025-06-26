@@ -34,7 +34,8 @@ class UAV_MultiTarget_Scene_Base(UAV_Scene_Base):
             "UAV_MULTI_TARGET_SCENE_BASE_EFFECTIVE_TIME_STORE": self.UAV_MULTITARGET_SCENE_BASE_EFFECTIVE_TIME_STORE,
             "UAV_MULTI_TARGET_SCENE_BASE_EFFECTIVE_TIME_FOR_TARGET_STORE": self.UAV_MULTITARGET_SCENE_BASE_EFFECTIVE_TIME_FOR_TARGET_STORE,
             "UAV_MULTI_TARGET_SCENE_BASE_TRACK_TARGET_ID_STORE": self.UAV_MULTITARGET_SCENE_BASE_TRACK_TARGET_ID_STORE,
-            "UAV_MULTI_TARGET_SCENE_BASE_AVG_CLOSE_DIS_STORE": self.UAV_MULTITARGET_SCENE_BASE_AVG_CLOSE_DIS_STORE
+            "UAV_MULTI_TARGET_SCENE_BASE_AVG_CLOSE_DIS_STORE": self.UAV_MULTITARGET_SCENE_BASE_AVG_CLOSE_DIS_STORE,
+            "UAV_MULTI_TARGET_SCENE_BASE_TARGET_TRACKED_NUM_VARIANCE_VISUALIZE": self.UAV_MULTITARGET_SCENE_BASE_TARGET_TRACKED_NUM_VARIANCE_VISUALIZE
 
         }
         self.SCENE_AND_MAS_RECORD_MAP.update({
@@ -47,10 +48,11 @@ class UAV_MultiTarget_Scene_Base(UAV_Scene_Base):
             "UAV_MULTI_TARGET_SCENE_BASE_UAVAlertDisStore": "recordAlertDisOfUAVsForVisualize",
             "UAV_MULTI_TARGET_SCENE_BASE_UAVFitnessStore": "recordFitness",
             "UAV_MULTI_TARGET_SCENE_BASE_TRACK_TARGET_ID_STORE": "recordTrackTargetID",
-            "UAV_MULTI_TARGET_SCENE_BASE_AVG_CLOSE_DIS_STORE": "recordDisBetweenCloseTar_UAV"
+            "UAV_MULTI_TARGET_SCENE_BASE_AVG_CLOSE_DIS_STORE": "recordDisBetweenCloseTar_UAV",
+            "UAV_MULTITARGET_SCENE_BASE_TARGET_TRACKED_NUM_VARIANCE_VISUALIZE": "recordNumOfTrackingUAVForTarget"
         })
 
-        statOutputRegisters = ["UAV_MULTI_TARGET_SCENE_BASE_TARGET_TRACKED_NUM_VISUALIZE",
+        statOutputRegisters = ["UAV_MULTI_TARGET_SCENE_BASE_TARGET_TRACKED_NUM_VARIANCE_VISUALIZE",
                                "UAV_SCENE_BASE_UAVDisVisualize",
                                "UAV_SCENE_BASE_UAV_TRAJECTORY_VISUALIZE",
                                "UAV_SCENE_BASE_UAVAlertDisVisualize",
@@ -130,7 +132,7 @@ class UAV_MultiTarget_Scene_Base(UAV_Scene_Base):
                     scattersList.append(item)
                     nameList.append(r"target %d" % i)
 
-                self.UAV_SCENE_BASE_SimpleVisualizeTrajectory(scattersList, nameList, titleName="num of each target"
+                self.UAV_SCENE_BASE_SimpleVisualizeTrajectory(scattersList=scattersList, nameList=nameList, titleName="num of each target"
                                                                                                 "tracked by uav",
                                                               showOriginPoint=False, saveFigName="TrackTarNum")
             else:
@@ -138,6 +140,29 @@ class UAV_MultiTarget_Scene_Base(UAV_Scene_Base):
                                           "when call function %s" % (inspect.stack()[0][3]))
         except NotImplementedError as e:
             myLogger.myLogger_Logger().warn(repr(e))
+
+    def __UAV_MULTITARGET_SCENE_BASE_TARGET_TRACKED_NUM_VARIANCE_INNER(self):
+        varianceInEpochList = []
+        try:
+            if hasattr(self.multiAgentSystem, "numOfTrackingUAVForTargetStat"):
+                numOfTrackingUAVForTargetStat = self.multiAgentSystem.numOfTrackingUAVForTargetStat
+
+                for j in range(len(numOfTrackingUAVForTargetStat[0])):
+                    varianceInEpochList.append(np.var([float(item[j][1]) for item in numOfTrackingUAVForTargetStat]))
+
+                return varianceInEpochList
+            else:
+                raise NotImplementedError("There is no variable named numOfTrackingUAVForTargetStat needed"
+                                          "when call function %s" % (inspect.stack()[0][3]))
+        except NotImplementedError as e:
+            myLogger.myLogger_Logger().warn(repr(e))
+
+    def UAV_MULTITARGET_SCENE_BASE_TARGET_TRACKED_NUM_VARIANCE_VISUALIZE(self):
+        varianceInEpochList = self.__UAV_MULTITARGET_SCENE_BASE_TARGET_TRACKED_NUM_VARIANCE_INNER()
+        scattersList = [[np.array([float(index), item]) for index, item in enumerate(varianceInEpochList)]]
+        self.UAV_SCENE_BASE_SimpleVisualizeTrajectory(scattersList=scattersList, nameList=None, showOriginPoint=False,
+                                                      saveFigName="Variance",
+                                                      figureArgs={"figSize": self.NARROW_FIGURE_SIZE})
 
     def UAV_MULTITARGET_SCENE_BASE_UAV_CONSUME_VISUALIZE(self):
         scattersList = []
@@ -149,7 +174,7 @@ class UAV_MultiTarget_Scene_Base(UAV_Scene_Base):
                     scattersList.append(item)
                     nameList.append(r"uav %d" % i)
 
-                self.UAV_SCENE_BASE_SimpleVisualizeTrajectory(scattersList, nameList, titleName="each uav consume",
+                self.UAV_SCENE_BASE_SimpleVisualizeTrajectory(scattersList=scattersList, nameList=nameList, titleName="each uav consume",
                                                               showOriginPoint=False, saveFigName="consume")
             else:
                 raise NotImplementedError("There is no variable named consumeOfEachUAVStat needed"
@@ -167,7 +192,7 @@ class UAV_MultiTarget_Scene_Base(UAV_Scene_Base):
                     scattersList.append(item)
                     nameList.append(r"distance between uav %d and target" % i)
 
-                self.UAV_SCENE_BASE_SimpleVisualizeTrajectory(scattersList, nameList,
+                self.UAV_SCENE_BASE_SimpleVisualizeTrajectory(scattersList=scattersList, nameList=nameList,
                                                               titleName="distance between uav and targets",
                                                               showOriginPoint=False,
                                                               saveFigName="disBtwTarAndUAV")
@@ -244,21 +269,10 @@ class UAV_MultiTarget_Scene_Base(UAV_Scene_Base):
         self.UAV_SCENE_BASE_SimpleStoreStatData([stabilityStat], nameList)
 
     def UAV_MULTITARGET_SCENE_BASE_TARGET_TRACKED_NUM_VARIANCE_STORE(self):
-        varianceInEpochList = []
+        varianceInEpochList = self.__UAV_MULTITARGET_SCENE_BASE_TARGET_TRACKED_NUM_VARIANCE_INNER()
         nameList = ["variance of target tracked num"]
-        try:
-            if hasattr(self.multiAgentSystem, "numOfTrackingUAVForTargetStat"):
-                numOfTrackingUAVForTargetStat = self.multiAgentSystem.numOfTrackingUAVForTargetStat
 
-                for j in range(len(numOfTrackingUAVForTargetStat[0])):
-                    varianceInEpochList.append(np.var([float(item[j][1]) for item in numOfTrackingUAVForTargetStat]))
-
-                self.UAV_SCENE_BASE_SimpleStoreStatData(varianceInEpochList, nameList)
-            else:
-                raise NotImplementedError("There is no variable named numOfTrackingUAVForTargetStat needed"
-                                          "when call function %s" % (inspect.stack()[0][3]))
-        except NotImplementedError as e:
-            myLogger.myLogger_Logger().warn(repr(e))
+        self.UAV_SCENE_BASE_SimpleStoreStatData(varianceInEpochList, nameList)
 
     def UAV_MULTITARGET_SCENE_BASE_EFFECTIVE_TIME_STORE(self):
         nameList = ["max effective time", "avg effective time", "min effective time"]

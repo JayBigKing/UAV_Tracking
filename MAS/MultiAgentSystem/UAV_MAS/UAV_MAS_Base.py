@@ -91,13 +91,17 @@ class UAV_MAS_Base(MAS_WithStat_Base):
         if hasattr(self, 'UAVAvgDisListStat') is False:
             self.UAVAvgDisListStat = list()
 
+        if hasattr(self, 'UAVMinDisListStat') is False:
+            self.UAVMinDisListStat = list()
+
         if self.__recordDisOfUAVsInnerCalledDict.get(self.nowRunningGen) is not None:
             return
         else:
             self.__recordDisOfUAVsInnerCalledDict[self.nowRunningGen] = True
 
-        if len(self.UAVAvgDisListStat) == self.nowRunningGen:
+        if len(self.UAVMinDisListStat) == self.nowRunningGen:
             UAVAvgDisThisEpoch = 0.
+            UAVMinDisThisEpoch = 1e10
             for index, item in enumerate(self.agents):
                 for j in range(agentLen):
                     if index != j:
@@ -107,10 +111,12 @@ class UAV_MAS_Base(MAS_WithStat_Base):
                             self.UAVDisMatrix[index, j] = calcDistance(item.positionState[0: 2],
                                                                        self.agents[j].positionState[0: 2])
                         UAVAvgDisThisEpoch += self.UAVDisMatrix[index, j]
+                        UAVMinDisThisEpoch = min(UAVMinDisThisEpoch, self.UAVDisMatrix[index, j])
                         self.UAVDisStatMatrix[index, j, 0] += self.UAVDisMatrix[index, j]
                         self.UAVDisStatMatrix[index, j, 1] = min(self.UAVDisMatrix[index, j],
                                                                  self.UAVDisStatMatrix[index, j, 1])
             self.UAVAvgDisListStat.append([float(self.nowRunningGen), UAVAvgDisThisEpoch / (agentLen * (agentLen - 1))])
+            self.UAVMinDisListStat.append([float(self.nowRunningGen), UAVMinDisThisEpoch])
 
     """
     @brief: print out distance matrix in every Gen
